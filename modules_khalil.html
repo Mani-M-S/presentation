@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetEthic AI — Modules 1 &amp; 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f4f8;--slide-bg:#ffffff;--grid-c:rgba(14,116,144,0.04);--card-bg:rgba(15,23,42,0.035);--card-bdr:rgba(15,23,42,0.09);--t1:#0f172a;--t2:#334155;--t3:#94a3b8;--cyan:#0e7490;--cyan-l:rgba(14,116,144,0.12);--amber:#c2410c;--amber-l:rgba(194,65,12,0.12);--green:#15803d;--green-l:rgba(21,128,61,0.12);--red:#dc2626;--red-l:rgba(220,38,38,0.10);--purple:#6d28d9;--purple-l:rgba(109,40,217,0.10);--font:'Urbanist',sans-serif;--mono:'JetBrains Mono',monospace;--spring:cubic-bezier(0.16,1,0.3,1);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--bg);}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--slide-bg);}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img,video,canvas,svg{max-width:100%;max-height:100%;}
+@media print{html,body{width:1920px;height:auto;overflow:visible;background:#fff;}.deck-viewport{position:static;overflow:visible;}.deck-stage{position:static;width:auto;height:auto;transform:none!important;}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always;}.slide:last-child{break-after:auto;page-break-after:auto;}.pg-ui{display:none!important;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.1ms!important;}}
+.slide{background:linear-gradient(var(--grid-c) 1px,transparent 1px),linear-gradient(90deg,var(--grid-c) 1px,transparent 1px),var(--slide-bg);background-size:80px 80px,80px 80px;}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--spring),transform .5s var(--spring);}
+.slide.visible .reveal{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.05s;}.reveal:nth-child(2){transition-delay:.13s;}.reveal:nth-child(3){transition-delay:.21s;}
+.reveal:nth-child(4){transition-delay:.29s;}.reveal:nth-child(5){transition-delay:.37s;}.reveal:nth-child(6){transition-delay:.45s;}
+.reveal:nth-child(7){transition-delay:.53s;}.reveal:nth-child(8){transition-delay:.61s;}
+.sh{position:absolute;top:66px;left:88px;right:88px;}
+.sb{position:absolute;top:260px;left:88px;right:88px;bottom:62px;}
+.s-bg{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.stripe-cyan{position:absolute;top:0;left:0;width:5px;height:0;background:linear-gradient(to bottom,var(--cyan),transparent);transition:height .7s var(--spring) .1s;}
+.stripe-green{position:absolute;top:0;left:0;width:5px;height:0;background:linear-gradient(to bottom,var(--green),transparent);transition:height .7s var(--spring) .1s;}
+.slide.visible .stripe-cyan,.slide.visible .stripe-green{height:100%;}
+.sec-label{font-family:var(--mono);font-size:21px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);margin-bottom:16px;}
+.sec-label.cyan{color:var(--cyan);}.sec-label.green{color:var(--green);}
+.stitle{font-family:var(--font);font-size:72px;font-weight:800;color:var(--t1);line-height:1.05;letter-spacing:-.032em;margin-bottom:18px;}
+.abar{width:0;height:4px;border-radius:2px;background:var(--cyan);margin-bottom:30px;transition:width .75s var(--spring) .38s;}
+.abar.green{background:var(--green);}
+.slide.visible .abar{width:64px;}
+.card{background:var(--card-bg);border:1px solid var(--card-bdr);border-radius:13px;padding:28px 32px;}
+.card.cyan{border-left:4px solid var(--cyan);background:var(--cyan-l);}
+.card.green{border-left:4px solid var(--green);background:var(--green-l);}
+.card.red{border-left:4px solid var(--red);background:var(--red-l);}
+.ctitle{font-family:var(--font);font-size:28px;font-weight:700;color:var(--t1);margin-bottom:14px;}
+.blist{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.blist li{display:flex;align-items:flex-start;gap:12px;font-family:var(--font);font-size:26px;color:var(--t2);line-height:1.55;}
+.blist li::before{content:'▸';color:var(--cyan);font-size:16px;margin-top:5px;flex-shrink:0;}
+.blist.green li::before{color:var(--green);}.blist.red li::before{color:var(--red);}
+.blist.sm li{font-size:23px;gap:10px;}.blist.sm li::before{font-size:13px;margin-top:4px;}
+.badge{display:inline-block;padding:5px 14px;border-radius:100px;font-family:var(--mono);font-size:14px;font-weight:700;white-space:nowrap;}
+.badge.cyan{background:var(--cyan-l);color:var(--cyan);}.badge.green{background:var(--green-l);color:var(--green);}
+.badge.amber{background:var(--amber-l);color:var(--amber);}.badge.red{background:var(--red-l);color:var(--red);}
+.code{background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.10);border-radius:8px;padding:18px 22px;font-family:var(--mono);font-size:17px;line-height:1.85;color:var(--t2);white-space:pre;}
+.c{color:var(--cyan);}.a{color:var(--amber);}.g{color:var(--green);}.r{color:var(--red);}.p{color:var(--purple);}.d{color:var(--t3);}
+.pg{position:absolute;bottom:26px;right:88px;font-family:var(--mono);font-size:16px;color:var(--t3);letter-spacing:.08em;}
+.pg-ui{position:fixed;bottom:0;left:0;right:0;height:3px;z-index:2000;background:rgba(15,23,42,.07);}
+.pg-fill{height:100%;background:var(--cyan);transition:width .35s var(--spring);}
+.pg-count{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:13px;color:rgba(15,23,42,.28);letter-spacing:.12em;z-index:2000;}
+.screen-frame{border-radius:12px;overflow:hidden;box-shadow:0 24px 70px rgba(15,23,42,.20),0 0 0 1px rgba(15,23,42,.08);}
+/* perf bars */
+.perf-wrap{height:8px;background:rgba(15,23,42,.08);border-radius:4px;margin-top:6px;overflow:hidden;}
+.perf-fill{height:100%;border-radius:4px;width:0;transition:width 1.2s var(--spring);}
+/* label pills */
+.lpill{padding:8px 18px;border-radius:8px;font-family:var(--font);font-size:20px;font-weight:500;color:var(--t2);background:var(--card-bg);border:1px solid var(--card-bdr);}
+.lpill.urgent{background:rgba(220,38,38,.10);border-color:rgba(220,38,38,.28);color:var(--red);}
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 20 — MODULE 1 SECTION DIVIDER
+     ════════════════════════════════════════════════════════ -->
+<section class="slide active" id="s-m1-div">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 50%,rgba(14,116,144,.18) 0%,transparent 58%),radial-gradient(ellipse at 90% 10%,rgba(21,128,61,.10) 0%,transparent 44%),radial-gradient(ellipse at 10% 90%,rgba(109,40,217,.07) 0%,transparent 44%);"></div>
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px;">
+    <div class="reveal" style="font-family:var(--mono);font-size:17px;letter-spacing:.24em;color:var(--t3);text-transform:uppercase;">Section 07</div>
+    <div class="reveal" style="font-family:var(--mono);font-size:20px;letter-spacing:.2em;color:var(--cyan);font-weight:700;text-transform:uppercase;">Module 01</div>
+    <h2 class="reveal" style="font-family:var(--font);font-size:104px;font-weight:800;color:var(--t1);letter-spacing:-.04em;line-height:1;">Noa Assistant</h2>
+    <div class="reveal" style="width:76px;height:4px;background:var(--cyan);border-radius:2px;"></div>
+    <p class="reveal" style="font-family:var(--font);font-size:30px;font-weight:300;color:var(--t2);max-width:860px;line-height:1.4;">Assistant virtuel public Netethic — Boucle agentique multi-LLM · RAG public</p>
+    <div class="reveal" style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+      <span class="badge cyan">Boucle agentique</span>
+      <span class="badge cyan">Claude / Gemini</span>
+      <span class="badge cyan">React + Vite</span>
+      <span class="badge cyan">Patron Strategy</span>
+    </div>
+  </div>
+  <div class="pg">20 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 21 — MODULE 1: NOA ARCHITECTURE + RAG
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m1-archi">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 0% 0%,rgba(14,116,144,.18) 0%,transparent 52%),radial-gradient(ellipse at 100% 100%,rgba(14,116,144,.08) 0%,transparent 44%);"></div>
+  <div class="stripe-cyan"></div>
+  <div class="sh">
+    <div class="sec-label cyan reveal">Module 01 — Noa Assistant (public)</div>
+    <h2 class="stitle reveal">Boucle agentique + RAG — Le LLM décide lui-même</h2>
+    <div class="abar reveal" style="margin-bottom:8px;"></div>
+  </div>
+  <div class="sb" style="top:218px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;height:100%;">
+
+      <!-- Left: Noa infographic -->
+      <div class="reveal" style="display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.02);border:1px solid var(--card-bdr);border-radius:13px;padding:14px;overflow:hidden;">
+        <img src="../presentation/infographics/Noa.png" alt="Module 1 Noa — pipeline agentique" style="max-width:100%;max-height:100%;object-fit:contain;">
+      </div>
+
+      <!-- Right: explanation -->
+      <div style="display:flex;flex-direction:column;gap:18px;height:100%;">
+
+        <div class="card cyan reveal">
+          <div class="ctitle">Pourquoi une boucle agentique ?</div>
+          <ul class="blist sm" style="gap:14px;">
+            <li>Le LLM <strong style="color:var(--t1);">décide lui-même</strong> quels outils appeler et dans quel ordre</li>
+            <li>Si ChromaDB ne trouve rien → <strong style="color:var(--t1);">scraping live</strong> du site Netethic automatiquement</li>
+            <li>Pas de pipeline rigide à maintenir — s'adapte aux nouvelles questions</li>
+          </ul>
+        </div>
+
+        <div class="card reveal">
+          <div class="ctitle">Patron Strategy — Multi-LLM sans friction</div>
+          <div class="code" style="margin-top:0;font-size:17px;padding:14px 18px;"><span class="c">AGENT_PROVIDER</span>=<span class="g">claude</span>  <span class="d">→ Anthropic API</span>
+<span class="c">AGENT_PROVIDER</span>=<span class="g">gemini</span>  <span class="d">→ Google AI API</span>
+<span class="d">Interface commune : run_agent(session, msg, lang)</span>
+<span class="d">Changement de LLM sans modifier le code</span></div>
+        </div>
+
+        <div class="card reveal" style="background:rgba(14,116,144,.05);border-color:rgba(14,116,144,.18);">
+          <div class="ctitle">RAG public — Ancrer dans les faits</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <div style="font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.12em;margin-bottom:8px;font-weight:700;">INDEXATION</div>
+              <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">Site Netethic → chunks → sentence-transformers (384d) → ChromaDB</div>
+            </div>
+            <div>
+              <div style="font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.12em;margin-bottom:8px;font-weight:700;">REQUÊTE</div>
+              <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">"combien ça coûte" → top-3 chunks "tarifs" → injectés dans le prompt</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card red reveal">
+          <div class="ctitle">Sans RAG = hallucination</div>
+          <div style="font-family:var(--font);font-size:22px;color:var(--t2);line-height:1.5;">Le LLM ne connaît pas les tarifs spécifiques de Netethic → il <span style="color:var(--red);font-weight:700;">invente</span> des réponses plausibles mais fausses.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="pg">21 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 22 — MODULE 4 SECTION DIVIDER
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m4-div">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 50%,rgba(21,128,61,.18) 0%,transparent 58%),radial-gradient(ellipse at 10% 90%,rgba(14,116,144,.10) 0%,transparent 44%),radial-gradient(ellipse at 90% 10%,rgba(194,65,12,.07) 0%,transparent 44%);"></div>
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px;">
+    <div class="reveal" style="font-family:var(--mono);font-size:17px;letter-spacing:.24em;color:var(--t3);text-transform:uppercase;">Section 08</div>
+    <div class="reveal" style="font-family:var(--mono);font-size:20px;letter-spacing:.2em;color:var(--green);font-weight:700;text-transform:uppercase;">Module 04</div>
+    <h2 class="reveal" style="font-family:var(--font);font-size:104px;font-weight:800;color:var(--t1);letter-spacing:-.04em;line-height:1;">Classificateur</h2>
+    <div class="reveal" style="width:76px;height:4px;background:var(--green);border-radius:2px;"></div>
+    <p class="reveal" style="font-family:var(--font);font-size:30px;font-weight:300;color:var(--t2);max-width:860px;line-height:1.4;">Détection automatique de 16 types de cyberharcèlement — ancré dans le droit français</p>
+    <div class="reveal" style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+      <span class="badge green">16 labels multi-classes</span>
+      <span class="badge green">4 stratégies</span>
+      <span class="badge green">RAG juridique</span>
+      <span class="badge green">LLM-as-a-Judge</span>
+    </div>
+  </div>
+  <div class="pg">22 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 23 — MODULE 4: 16 LABELS + 4 STRATEGIES
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m4-classif">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 100% 100%,rgba(21,128,61,.18) 0%,transparent 52%),radial-gradient(ellipse at 0% 0%,rgba(21,128,61,.07) 0%,transparent 44%);"></div>
+  <div class="stripe-green"></div>
+  <div class="sh">
+    <div class="sec-label green reveal">Module 04 — Classificateur</div>
+    <h2 class="stitle reveal">16 labels · 4 stratégies · Ancrage juridique</h2>
+    <div class="abar green reveal" style="margin-bottom:8px;"></div>
+  </div>
+  <div class="sb" style="top:218px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;height:100%;">
+
+      <!-- Left: infographic -->
+      <div class="reveal" style="display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.02);border:1px solid var(--card-bdr);border-radius:13px;padding:12px;overflow:hidden;">
+        <img src="../presentation/infographics/classificateur.png" alt="Pipeline classificateur" style="max-width:100%;max-height:100%;object-fit:contain;">
+      </div>
+
+      <!-- Middle: 16 labels -->
+      <div style="display:flex;flex-direction:column;gap:14px;height:100%;">
+        <div class="reveal">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-bottom:9px;">Groupe A — Actes de harcèlement (10)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;">
+            <span class="lpill">Insultes</span><span class="lpill">Menaces</span><span class="lpill">Abus moral</span>
+            <span class="lpill">Bodyshaming</span><span class="lpill">Racisme</span><span class="lpill">LGBTQIA+</span>
+            <span class="lpill">Extrémisme</span><span class="lpill">Violence physique</span>
+            <span class="lpill">Exclusion sociale</span><span class="lpill">Grossièretés</span>
+          </div>
+        </div>
+        <div class="reveal">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:9px;">Groupe B — Signaux de détresse (6)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;">
+            <span class="lpill">Dépression</span><span class="lpill urgent">Idéation suicidaire 🔴</span>
+            <span class="lpill">Solitude</span><span class="lpill">Anxiété</span>
+            <span class="lpill">Colère</span><span class="lpill">Addiction</span>
+          </div>
+        </div>
+        <div class="card reveal" style="flex:1;">
+          <div class="ctitle">Multi-labels simultanés</div>
+          <div class="code" style="margin-top:4px;font-size:16px;line-height:1.7;padding:14px 18px;">
+"T'es trop moche, fais-toi du mal."
+
+→ <span class="a">Bodyshaming</span>
+→ <span class="a">Exclusion sociale</span>
+→ <span class="r">Idéation suicidaire</span>  (urgent=true)</div>
+        </div>
+        <div class="reveal" style="padding:14px 18px;background:rgba(21,128,61,.07);border:1px solid rgba(21,128,61,.22);border-radius:9px;">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--green);letter-spacing:.1em;font-weight:700;margin-bottom:6px;">Ancrage juridique — RAG</div>
+          <div style="font-family:var(--font);font-size:19px;color:var(--t2);line-height:1.45;">Code Pénal Art. 222-33-2-2 + Loi 2022 indexés · Le LLM peut citer des articles</div>
+        </div>
+      </div>
+
+      <!-- Right: 4 strategies -->
+      <div style="display:flex;flex-direction:column;gap:14px;height:100%;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;">4 stratégies</div>
+        <div class="reveal" style="flex:1;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="font-family:var(--mono);font-size:13px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;text-align:left;padding:10px 14px;border-bottom:1px solid var(--card-bdr);">Stratégie</th>
+                <th style="font-family:var(--mono);font-size:13px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;text-align:center;padding:10px 14px;border-bottom:1px solid var(--card-bdr);">Vitesse</th>
+                <th style="font-family:var(--mono);font-size:13px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;text-align:left;padding:10px 14px;border-bottom:1px solid var(--card-bdr);">Performance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family:var(--font);font-size:20px;font-weight:600;color:var(--t1);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">LLM seul</td>
+                <td style="text-align:center;font-family:var(--mono);font-size:17px;color:var(--cyan);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">~17 ms</td>
+                <td style="padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);"><div class="perf-wrap"><div class="perf-fill" data-w="65" style="background:var(--cyan);"></div></div></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font);font-size:20px;font-weight:600;color:var(--t1);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">LLM + RAG juridique</td>
+                <td style="text-align:center;font-family:var(--mono);font-size:17px;color:var(--green);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">~1 ms*</td>
+                <td style="padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);"><div class="perf-wrap"><div class="perf-fill" data-w="98" style="background:var(--green);"></div></div></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font);font-size:20px;font-weight:600;color:var(--t1);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">Heuristiques</td>
+                <td style="text-align:center;font-family:var(--mono);font-size:17px;color:var(--t3);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">~0.1 ms</td>
+                <td style="padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);"><div class="perf-wrap"><div class="perf-fill" data-w="35" style="background:var(--t3);"></div></div></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--font);font-size:21px;font-weight:800;color:var(--amber);padding:12px 14px;">Hybride ★ PROD</td>
+                <td style="text-align:center;font-family:var(--mono);font-size:17px;color:var(--amber);padding:12px 14px;">~0.8 ms</td>
+                <td style="padding:12px 14px;"><div class="perf-wrap"><div class="perf-fill" data-w="82" style="background:var(--amber);"></div></div></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="font-family:var(--mono);font-size:13px;color:var(--t3);margin-top:8px;">* ~1 ms en cache chaud ChromaDB</div>
+        </div>
+        <div class="reveal" style="padding:16px 20px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.22);border-radius:9px;">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--red);font-weight:700;letter-spacing:.1em;margin-bottom:6px;">🔴 FLAG URGENT + CHAÎNE DE REPLI</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.45;">Si LLM échoue → heuristiques → étiquette neutre garantie. Toujours une réponse, jamais d'exception non gérée.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="pg">23 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 24 — MODULE 1 DEMO (Noa — 2 screenshots)
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-noa-demo">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 20% 0%,rgba(14,116,144,.12) 0%,transparent 48%),radial-gradient(ellipse at 80% 100%,rgba(21,128,61,.08) 0%,transparent 44%);"></div>
+  <div class="stripe-cyan"></div>
+  <div style="position:absolute;top:30px;left:88px;right:88px;display:flex;align-items:center;justify-content:space-between;z-index:1;">
+    <div>
+      <div style="font-family:var(--mono);font-size:15px;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase;margin-bottom:8px;">Module 01 — Noa Assistant · Démonstration</div>
+      <div style="font-family:var(--font);font-size:48px;font-weight:800;color:var(--t1);letter-spacing:-.025em;line-height:1.1;">Interface publique &amp; Flux de réservation démo</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <span class="badge cyan">Boucle agentique</span>
+      <span class="badge cyan">RAG public</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;top:158px;left:88px;right:88px;bottom:62px;display:grid;grid-template-columns:1fr 1fr;gap:28px;z-index:1;">
+
+    <!-- Screenshot 1: Noa main interface -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="reveal screen-frame" style="flex:1;overflow:hidden;background:#f8fafc;">
+        <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/interface_noa.png"
+             alt="Interface Noa — assistant public"
+             style="width:100%;height:100%;object-fit:cover;object-position:top;">
+      </div>
+      <div class="reveal" style="padding:16px 20px;background:rgba(14,116,144,.06);border:1px solid rgba(14,116,144,.18);border-radius:10px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.13em;font-weight:700;margin-bottom:6px;">CHATBOT PUBLIC — REACT + VITE</div>
+        <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">Questions sur Netethic répondues 24h/24 · Réponses ancrées dans les documents · Boucle agentique multi-LLM</div>
+      </div>
+    </div>
+
+    <!-- Screenshot 2: Noa reservation flow -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="reveal screen-frame" style="flex:1;overflow:hidden;background:#f8fafc;">
+        <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/noa_reservation_flow.png"
+             alt="Noa — flux de réservation démo"
+             style="width:100%;height:100%;object-fit:cover;object-position:top;">
+      </div>
+      <div class="reveal" style="padding:16px 20px;background:rgba(21,128,61,.06);border:1px solid rgba(21,128,61,.18);border-radius:10px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--green);letter-spacing:.13em;font-weight:700;margin-bottom:6px;">FLUX DE RÉSERVATION AUTOMATISÉ</div>
+        <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">Collecte des coordonnées prospect · Planification de démo · Sans intervention humaine · Zéro formulaire manuel</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">24 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 25 — MODULE 4 DEMO (Classification example)
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m4-demo">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 80% 0%,rgba(21,128,61,.12) 0%,transparent 48%),radial-gradient(ellipse at 20% 100%,rgba(194,65,12,.08) 0%,transparent 44%);"></div>
+  <div class="stripe-green"></div>
+  <div style="position:absolute;top:30px;left:88px;right:88px;display:flex;align-items:center;justify-content:space-between;z-index:1;">
+    <div>
+      <div style="font-family:var(--mono);font-size:15px;letter-spacing:.2em;color:var(--green);text-transform:uppercase;margin-bottom:8px;">Module 04 — Classificateur · Démonstration</div>
+      <div style="font-family:var(--font);font-size:48px;font-weight:800;color:var(--t1);letter-spacing:-.025em;line-height:1.1;">Exemple de classification — Multi-labels en action</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <span class="badge green">16 labels</span>
+      <span class="badge green">Hybride PROD</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;top:158px;left:88px;right:88px;bottom:62px;display:grid;grid-template-columns:1fr 1fr;gap:28px;z-index:1;">
+
+    <!-- Left: Input + result -->
+    <div style="display:flex;flex-direction:column;gap:20px;justify-content:center;">
+      <div class="reveal" style="padding:28px 32px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:13px;">
+        <div style="font-family:var(--mono);font-size:14px;color:var(--t3);letter-spacing:.14em;margin-bottom:12px;font-weight:700;">TEXTE SOUMIS À ANALYSE</div>
+        <div style="padding:20px 24px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.2);border-radius:9px;font-family:var(--font);font-size:26px;color:var(--t1);font-style:italic;line-height:1.5;">"T'es vraiment trop moche. Personne ne veut de toi. Disparais."</div>
+      </div>
+
+      <div class="reveal" style="padding:28px 32px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:13px;">
+        <div style="font-family:var(--mono);font-size:14px;color:var(--green);letter-spacing:.14em;margin-bottom:14px;font-weight:700;">LABELS DÉTECTÉS</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+          <span style="padding:8px 20px;border-radius:8px;font-family:var(--font);font-size:22px;font-weight:700;color:var(--amber);background:var(--amber-l);border:1px solid rgba(194,65,12,.3);">Bodyshaming</span>
+          <span style="padding:8px 20px;border-radius:8px;font-family:var(--font);font-size:22px;font-weight:700;color:var(--amber);background:var(--amber-l);border:1px solid rgba(194,65,12,.3);">Exclusion sociale</span>
+          <span style="padding:8px 20px;border-radius:8px;font-family:var(--font);font-size:22px;font-weight:700;color:var(--red);background:var(--red-l);border:1px solid rgba(220,38,38,.3);">Idéation suicidaire 🔴</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Consequences + legal -->
+    <div style="display:flex;flex-direction:column;gap:18px;justify-content:center;">
+      <div class="reveal" style="padding:26px 28px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.25);border-left:4px solid var(--red);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:14px;color:var(--red);letter-spacing:.12em;font-weight:700;margin-bottom:10px;">🔴 urgent : true</div>
+        <div style="font-family:var(--font);font-size:23px;color:var(--t2);line-height:1.5;">Prise en charge prioritaire déclenchée automatiquement sur la plateforme Netethic</div>
+      </div>
+
+      <div class="reveal" style="padding:26px 28px;background:rgba(21,128,61,.07);border:1px solid rgba(21,128,61,.22);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:14px;color:var(--green);letter-spacing:.12em;font-weight:700;margin-bottom:10px;">Référence juridique</div>
+        <div style="font-family:var(--font);font-size:23px;color:var(--t2);line-height:1.5;">Art. 222-33-2-2 Code Pénal — Cyberharcèlement moral avec aggravation (victime mineure)</div>
+      </div>
+
+      <div class="reveal" style="padding:26px 28px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.20);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:14px;color:var(--amber);letter-spacing:.12em;font-weight:700;margin-bottom:10px;">Stratégie utilisée : Hybride</div>
+        <div style="font-family:var(--font);font-size:23px;color:var(--t2);line-height:1.5;">LLM + RAG juridique + heuristiques en repli — ~0.8 ms · précision maximale</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="pg">25 / 30</div>
+</section>
+
+
+</main>
+</div>
+<div class="pg-ui"><div class="pg-fill" id="pgFill"></div></div>
+<div class="pg-count" id="pgCount">20 / 30</div>
+
+<script>
+const DeckFX = {
+  _prev: -1,
+  onSlide(idx) {
+    if (this._prev === 3 && idx !== 3) {
+      document.querySelectorAll('.perf-fill[data-w]').forEach(el => {
+        el.style.transition='none'; el.style.width='0';
+        requestAnimationFrame(()=>{el.style.transition='';});
+      });
+    }
+    if (idx === 3) {
+      setTimeout(() => {
+        document.querySelectorAll('.perf-fill[data-w]').forEach((el,i) => {
+          setTimeout(() => { el.style.width = el.dataset.w + '%'; }, i * 100);
+        });
+      }, 200);
+    }
+    this._prev = idx;
+  }
+};
+
+const SECTION_CONFIG = { globalStart: 20, globalTotal: 30, next: 'evaluation_conclusion.html', prev: 'modules_salah.html' };
+class SlidePresentation {
+  constructor() {
+    this.slides=document.querySelectorAll('.slide');this.total=this.slides.length;this.current=0;
+    this.stage=document.getElementById('deckStage');this.pgFill=document.getElementById('pgFill');
+    this.pgCount=document.getElementById('pgCount');this.touchX=0;
+    this.setupScale();this.setupKeyboard();this.setupTouch();this.setupWheel();
+    this.showSlide(window.location.hash==='#last'?this.total-1:0);
+  }
+  setupScale(){const s=()=>{const f=Math.min(window.innerWidth/1920,window.innerHeight/1080);const x=(window.innerWidth-1920*f)/2,y=(window.innerHeight-1080*f)/2;this.stage.style.transform=`translate(${x}px,${y}px) scale(${f})`;};s();window.addEventListener('resize',s);}
+  setupKeyboard(){document.addEventListener('keydown',e=>{if(e.target.getAttribute('contenteditable'))return;if(['ArrowRight','ArrowDown','Space','PageDown'].includes(e.code)){e.preventDefault();this.next();}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.code)){e.preventDefault();this.prev();}else if(e.code==='Home'){e.preventDefault();this.showSlide(0);}else if(e.code==='End'){e.preventDefault();this.showSlide(this.total-1);}});}
+  setupTouch(){this.stage.addEventListener('touchstart',e=>{this.touchX=e.changedTouches[0].screenX;},{passive:true});this.stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-this.touchX;if(Math.abs(dx)>40)dx<0?this.next():this.prev();},{passive:true});}
+  setupWheel(){let last=0;document.addEventListener('wheel',e=>{const now=Date.now();if(now-last<500)return;last=now;e.deltaY>0?this.next():this.prev();},{passive:true});}
+  next(){this.current===this.total-1&&SECTION_CONFIG.next?(window.location.href=SECTION_CONFIG.next):this.showSlide(this.current+1);}
+  prev(){this.current===0&&SECTION_CONFIG.prev?(window.location.href=SECTION_CONFIG.prev+'#last'):this.showSlide(this.current-1);}
+  showSlide(idx){const i=Math.max(0,Math.min(idx,this.total-1));this.slides.forEach((s,n)=>{s.classList.toggle('active',n===i);s.classList.toggle('visible',n===i);});this.current=i;const g=SECTION_CONFIG.globalStart+i;const pct=(g/SECTION_CONFIG.globalTotal*100).toFixed(1);this.pgFill.style.width=pct+'%';this.pgCount.textContent=`${String(g).padStart(2,'0')} / ${SECTION_CONFIG.globalTotal}`;DeckFX.onSlide(i);}
+}
+const deck = new SlidePresentation();
+</script>
+</body>
+</html>

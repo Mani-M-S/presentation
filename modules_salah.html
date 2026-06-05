@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetEthic AI — Modules 2 &amp; 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f4f8;--slide-bg:#ffffff;--grid-c:rgba(14,116,144,0.04);--card-bg:rgba(15,23,42,0.035);--card-bdr:rgba(15,23,42,0.09);--t1:#0f172a;--t2:#334155;--t3:#94a3b8;--cyan:#0e7490;--cyan-l:rgba(14,116,144,0.12);--amber:#c2410c;--amber-l:rgba(194,65,12,0.12);--green:#15803d;--green-l:rgba(21,128,61,0.12);--red:#dc2626;--red-l:rgba(220,38,38,0.10);--purple:#6d28d9;--purple-l:rgba(109,40,217,0.10);--font:'Urbanist',sans-serif;--mono:'JetBrains Mono',monospace;--spring:cubic-bezier(0.16,1,0.3,1);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--bg);}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--slide-bg);}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img,video,canvas,svg{max-width:100%;max-height:100%;}
+@media print{html,body{width:1920px;height:auto;overflow:visible;background:#fff;}.deck-viewport{position:static;overflow:visible;}.deck-stage{position:static;width:auto;height:auto;transform:none!important;}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always;}.slide:last-child{break-after:auto;page-break-after:auto;}.pg-ui{display:none!important;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.1ms!important;}}
+.slide{background:linear-gradient(var(--grid-c) 1px,transparent 1px),linear-gradient(90deg,var(--grid-c) 1px,transparent 1px),var(--slide-bg);background-size:80px 80px,80px 80px;}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--spring),transform .5s var(--spring);}
+.slide.visible .reveal{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.05s;}.reveal:nth-child(2){transition-delay:.13s;}.reveal:nth-child(3){transition-delay:.21s;}
+.reveal:nth-child(4){transition-delay:.29s;}.reveal:nth-child(5){transition-delay:.37s;}.reveal:nth-child(6){transition-delay:.45s;}
+.reveal:nth-child(7){transition-delay:.53s;}.reveal:nth-child(8){transition-delay:.61s;}
+.sh{position:absolute;top:66px;left:88px;right:88px;}
+.sb{position:absolute;top:260px;left:88px;right:88px;bottom:62px;}
+.s-bg{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.stripe-amber{position:absolute;top:0;left:0;width:5px;height:0;background:linear-gradient(to bottom,var(--amber),transparent);transition:height .7s var(--spring) .1s;}
+.stripe-purple{position:absolute;top:0;left:0;width:5px;height:0;background:linear-gradient(to bottom,var(--purple),transparent);transition:height .7s var(--spring) .1s;}
+.slide.visible .stripe-amber,.slide.visible .stripe-purple{height:100%;}
+.sec-label{font-family:var(--mono);font-size:21px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);margin-bottom:16px;}
+.sec-label.amber{color:var(--amber);}.sec-label.purple{color:var(--purple);}
+.stitle{font-family:var(--font);font-size:72px;font-weight:800;color:var(--t1);line-height:1.05;letter-spacing:-.032em;margin-bottom:18px;}
+.abar{width:0;height:4px;border-radius:2px;background:var(--cyan);margin-bottom:30px;transition:width .75s var(--spring) .38s;}
+.abar.amber{background:var(--amber);}.abar.purple{background:var(--purple);}
+.slide.visible .abar{width:64px;}
+.card{background:var(--card-bg);border:1px solid var(--card-bdr);border-radius:13px;padding:26px 30px;}
+.ctitle{font-family:var(--font);font-size:28px;font-weight:700;color:var(--t1);margin-bottom:14px;}
+.blist{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.blist li{display:flex;align-items:flex-start;gap:12px;font-family:var(--font);font-size:26px;color:var(--t2);line-height:1.55;}
+.blist li::before{content:'▸';color:var(--cyan);font-size:16px;margin-top:5px;flex-shrink:0;}
+.blist.amber li::before{color:var(--amber);}.blist.purple li::before{color:var(--purple);}.blist.red li::before{color:var(--red);}
+.blist.sm li{font-size:23px;gap:10px;}.blist.sm li::before{font-size:13px;margin-top:4px;}
+.badge{display:inline-block;padding:5px 14px;border-radius:100px;font-family:var(--mono);font-size:14px;font-weight:700;white-space:nowrap;}
+.badge.amber{background:var(--amber-l);color:var(--amber);}.badge.purple{background:var(--purple-l);color:var(--purple);}
+.badge.cyan{background:var(--cyan-l);color:var(--cyan);}.badge.green{background:var(--green-l);color:var(--green);}
+.badge.red{background:var(--red-l);color:var(--red);}
+.code{background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.10);border-radius:8px;padding:18px 22px;font-family:var(--mono);font-size:17px;line-height:1.85;color:var(--t2);white-space:pre;}
+.c{color:var(--cyan);}.a{color:var(--amber);}.g{color:var(--green);}.r{color:var(--red);}.p{color:var(--purple);}.d{color:var(--t3);}
+.iflow{display:flex;flex-direction:column;gap:4px;}
+.inode{display:flex;align-items:flex-start;gap:11px;padding:10px 15px;border-radius:8px;border:1px solid var(--card-bdr);background:var(--card-bg);}
+.inode.ia{background:rgba(194,65,12,.06);border-color:rgba(194,65,12,.20);}
+.inode.ic{background:rgba(14,116,144,.06);border-color:rgba(14,116,144,.20);}
+.inode.ig{background:rgba(21,128,61,.06);border-color:rgba(21,128,61,.20);}
+.inode.ir{background:rgba(220,38,38,.05);border-color:rgba(220,38,38,.20);}
+.inode.ip{background:rgba(109,40,217,.06);border-color:rgba(109,40,217,.20);}
+.in{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--t3);min-width:30px;flex-shrink:0;padding-top:2px;}
+.il{font-family:var(--font);font-size:20px;font-weight:700;color:var(--t1);line-height:1.2;}
+.is{font-family:var(--mono);font-size:13px;color:#64748b;line-height:1.4;margin-top:2px;}
+.iarr{font-size:13px;color:var(--t3);padding:1px 0 1px 30px;line-height:1.2;}
+.pg{position:absolute;bottom:26px;right:88px;font-family:var(--mono);font-size:16px;color:var(--t3);letter-spacing:.08em;}
+.pg-ui{position:fixed;bottom:0;left:0;right:0;height:3px;z-index:2000;background:rgba(15,23,42,.07);}
+.pg-fill{height:100%;background:var(--amber);transition:width .35s var(--spring);}
+.pg-count{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:13px;color:rgba(15,23,42,.28);letter-spacing:.12em;z-index:2000;}
+.screen-frame{border-radius:12px;overflow:hidden;box-shadow:0 24px 70px rgba(15,23,42,.20),0 0 0 1px rgba(15,23,42,.08);}
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 13 — MODULE 2 PIPELINE
+     ════════════════════════════════════════════════════════ -->
+<section class="slide active" id="s-m2-pipeline">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 100% 0%,rgba(194,65,12,.16) 0%,transparent 52%),radial-gradient(ellipse at 0% 100%,rgba(14,116,144,.08) 0%,transparent 44%);"></div>
+  <div class="stripe-amber"></div>
+  <div class="sh">
+    <div class="sec-label amber reveal">Module 02 — Assistant Technique</div>
+    <h2 class="stitle reveal">Pipeline RAG scopé — 2 scénarios d'intention</h2>
+    <div class="abar amber reveal" style="margin-bottom:8px;"></div>
+  </div>
+  <div class="sb" style="top:216px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;height:100%;">
+
+      <!-- Left: infographic -->
+      <div class="reveal" style="display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.02);border:1px solid var(--card-bdr);border-radius:13px;padding:12px;overflow:hidden;">
+        <img src="../presentation/infographics/assistant_technique.png" alt="Pipeline assistant technique" style="max-width:100%;max-height:100%;object-fit:contain;">
+      </div>
+
+      <!-- Middle: INTENT=PDF -->
+      <div style="display:flex;flex-direction:column;gap:8px;height:100%;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+          <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);background:rgba(21,128,61,.12);padding:5px 14px;border-radius:6px;border:1px solid rgba(21,128,61,.3);">INTENT = PDF</span>
+          <span style="font-family:var(--font);font-size:16px;color:var(--t3);">Documentation Markdown</span>
+        </div>
+        <div class="iflow">
+          <div class="inode ig">
+            <div class="in" style="color:var(--green);">5</div>
+            <div><div class="il">Cache sémantique Redis</div><div class="is">e5-base · cosinus ≥ 0.95 · 500 LRU · TTL 48h</div></div>
+            <span style="font-family:var(--mono);font-size:12px;background:rgba(21,128,61,.15);color:var(--green);padding:3px 9px;border-radius:4px;font-weight:700;white-space:nowrap;flex-shrink:0;align-self:center;">⚡ HIT</span>
+          </div>
+          <div class="iarr">↓ MISS</div>
+          <div class="inode ig">
+            <div class="in" style="color:var(--green);">6a</div>
+            <div><div class="il">ChromaDB scopé par catégorie</div><div class="is">11 modules · filtre filename · repli global si vide</div></div>
+          </div>
+          <div class="iarr">↓ chunks candidats</div>
+          <div class="inode ig">
+            <div class="in" style="color:var(--green);">6b</div>
+            <div><div class="il">Filtrage des chunks</div><div class="is">Contexte LLM : score ≥ 0.35 · Sources : ≥ 0.30</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ia">
+            <div class="in">7–8</div>
+            <div><div class="il">Prompt + LLM principal</div><div class="is">[Chunks]+[Historique]+[Question] · temp=0.0 · 800 tok</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ic">
+            <div class="in" style="color:var(--cyan);">✓</div>
+            <div><div class="il" style="color:var(--cyan);">Réponse + Sources + Confiance</div><div class="is">Cache écrit 48h · Session Redis mise à jour</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: INTENT=LIVE + no_results -->
+      <div style="display:flex;flex-direction:column;gap:8px;height:100%;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+          <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--amber);background:rgba(194,65,12,.12);padding:5px 14px;border-radius:6px;border:1px solid rgba(194,65,12,.3);">INTENT = LIVE</span>
+          <span style="font-family:var(--font);font-size:16px;color:var(--t3);">Tableau de bord temps réel</span>
+        </div>
+        <div class="iflow">
+          <div class="inode ia">
+            <div class="in" style="color:var(--amber);">L</div>
+            <div><div class="il">Vérification live_data JSON</div><div class="is">Absent → HTTP 400 · Vide → repli PDF automatique</div></div>
+          </div>
+          <div class="iarr">↓ présent et non-vide</div>
+          <div class="inode ia">
+            <div class="in" style="color:var(--amber);">L1</div>
+            <div><div class="il">Formateur dashboard FR</div><div class="is">Climat · Toxicité · Risques · Alertes → bloc texte</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ia">
+            <div class="in">7–8</div>
+            <div><div class="il">Prompt LIVE + LLM</div><div class="is">[Dashboard]+[Historique] · zéro ChromaDB · zéro cache</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ic">
+            <div class="in" style="color:var(--cyan);">✓</div>
+            <div><div class="il" style="color:var(--cyan);">Réponse temps réel</div><div class="is">Sans sources · sans écriture cache · session mise à jour</div></div>
+          </div>
+        </div>
+        <div style="margin-top:6px;padding:14px 18px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.20);border-left:3px solid var(--red);border-radius:9px;">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:.1em;font-weight:700;margin-bottom:7px;">no_results : true → 3 actions proposées</div>
+          <div style="font-family:var(--font);font-size:19px;color:var(--t2);">📅 Prendre RDV &nbsp;·&nbsp; 🐛 Signaler un Bug &nbsp;·&nbsp; 🔗 Portail Support</div>
+        </div>
+        <div style="padding:14px 18px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.20);border-radius:9px;">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.1em;font-weight:700;margin-bottom:5px;">Innovation : RAG scopé par catégorie UI</div>
+          <div style="font-family:var(--font);font-size:19px;color:var(--t2);line-height:1.45;">ChromaDB filtre par <strong style="color:var(--t1);">filename</strong> selon la catégorie Netethic avant de calculer la similarité.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">13 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 14 — MODULE 2 DEMO A (Interface principale + RDV)
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m2-demo-a">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 60% 0%,rgba(194,65,12,.14) 0%,transparent 50%),radial-gradient(ellipse at 0% 100%,rgba(14,116,144,.07) 0%,transparent 44%);"></div>
+  <div class="stripe-amber"></div>
+  <div style="position:absolute;top:30px;left:88px;right:88px;display:flex;align-items:center;justify-content:space-between;z-index:1;">
+    <div>
+      <div style="font-family:var(--mono);font-size:15px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:8px;">Module 02 — Assistant Technique · Démonstration 1/2</div>
+      <div style="font-family:var(--font);font-size:48px;font-weight:800;color:var(--t1);letter-spacing:-.025em;line-height:1.1;">Interface principale &amp; Prise de rendez-vous</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <span class="badge amber">Scénario PDF</span>
+      <span class="badge cyan">Cache sémantique</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;top:158px;left:88px;right:88px;bottom:62px;display:grid;grid-template-columns:1fr 1fr;gap:28px;z-index:1;">
+
+    <!-- Screenshot 1: Main interface -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="reveal screen-frame" style="flex:1;overflow:hidden;background:#f8fafc;">
+        <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/acceuil-support-chatbot.png"
+             alt="Interface principale du chatbot support"
+             style="width:100%;height:100%;object-fit:cover;object-position:top;">
+      </div>
+      <div class="reveal" style="padding:16px 20px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.18);border-radius:10px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.13em;font-weight:700;margin-bottom:6px;">INTERFACE PRINCIPALE</div>
+        <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">Sélection de catégorie → scope ChromaDB automatique · Réponses avec sources documentaires et scores de confiance</div>
+      </div>
+    </div>
+
+    <!-- Screenshot 2: RDV interface -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="reveal screen-frame" style="flex:1;overflow:hidden;background:#f8fafc;">
+        <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/rendez-vous-interface.png"
+             alt="Interface prise de rendez-vous"
+             style="width:100%;height:100%;object-fit:cover;object-position:top;">
+      </div>
+      <div class="reveal" style="padding:16px 20px;background:rgba(14,116,144,.06);border:1px solid rgba(14,116,144,.18);border-radius:10px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.13em;font-weight:700;margin-bottom:6px;">PRISE DE RENDEZ-VOUS AUTOMATISÉE</div>
+        <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">Formulaire auto-rempli par le LLM · POST /appointments · Motif généré automatiquement · Identité pré-remplie</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">14 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 15 — MODULE 2 DEMO B (Signalement de bug)
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m2-demo-b">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 40% 0%,rgba(220,38,38,.13) 0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(14,116,144,.07) 0%,transparent 44%);"></div>
+  <div class="stripe-amber"></div>
+  <div style="position:absolute;top:30px;left:88px;right:88px;display:flex;align-items:center;justify-content:space-between;z-index:1;">
+    <div>
+      <div style="font-family:var(--mono);font-size:15px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;margin-bottom:8px;">Module 02 — Assistant Technique · Démonstration 2/2</div>
+      <div style="font-family:var(--font);font-size:48px;font-weight:800;color:var(--t1);letter-spacing:-.025em;line-height:1.1;">Signalement de bug — Quand le chatbot ne sait pas répondre</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <span class="badge amber">no_results : true</span>
+      <span class="badge red">Escalade automatique</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;top:158px;left:88px;right:88px;bottom:62px;display:grid;grid-template-columns:1fr 360px;gap:28px;z-index:1;">
+
+    <!-- Screenshot: Bug report -->
+    <div class="reveal screen-frame" style="overflow:hidden;background:#f8fafc;">
+      <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/report-bug-interface.png"
+           alt="Interface signalement de bug"
+           style="width:100%;height:100%;object-fit:cover;object-position:top;">
+    </div>
+
+    <!-- Right annotation panel -->
+    <div style="display:flex;flex-direction:column;gap:16px;justify-content:center;">
+      <div class="reveal" style="padding:22px 24px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.20);border-left:4px solid var(--red);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:.13em;font-weight:700;margin-bottom:10px;">DÉCLENCHEUR</div>
+        <div style="font-family:var(--font);font-size:21px;color:var(--t2);line-height:1.5;">Aucun chunk pertinent trouvé dans ChromaDB — <code style="font-family:var(--mono);color:var(--red);">no_results : true</code></div>
+      </div>
+      <div class="reveal" style="padding:22px 24px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.20);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.13em;font-weight:700;margin-bottom:10px;">COMPORTEMENT</div>
+        <div style="font-family:var(--font);font-size:21px;color:var(--t2);line-height:1.55;">
+          Description LLM auto-générée<br>
+          Modifiable avant envoi<br>
+          POST /bug-reports
+        </div>
+      </div>
+      <div class="reveal" style="padding:22px 24px;background:rgba(21,128,61,.06);border:1px solid rgba(21,128,61,.20);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--green);letter-spacing:.13em;font-weight:700;margin-bottom:10px;">RÉSULTATS TESTS</div>
+        <div style="font-family:var(--font);font-size:28px;font-weight:800;color:var(--green);">35 / 35</div>
+        <div style="font-family:var(--mono);font-size:15px;color:var(--t3);margin-top:4px;">tests passés — 100 %</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">15 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 16 — MODULE 3 SECTION DIVIDER
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m3-div">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 50%,rgba(109,40,217,.18) 0%,transparent 58%),radial-gradient(ellipse at 90% 10%,rgba(14,116,144,.09) 0%,transparent 44%),radial-gradient(ellipse at 10% 90%,rgba(194,65,12,.06) 0%,transparent 44%);"></div>
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px;">
+    <div class="reveal" style="font-family:var(--mono);font-size:17px;letter-spacing:.24em;color:var(--t3);text-transform:uppercase;">Section 06</div>
+    <div class="reveal" style="font-family:var(--mono);font-size:20px;letter-spacing:.2em;color:var(--purple);font-weight:700;text-transform:uppercase;">Module 03</div>
+    <h2 class="reveal" style="font-family:var(--font);font-size:104px;font-weight:800;color:var(--t1);letter-spacing:-.04em;line-height:1;">Assistant Émotionnel</h2>
+    <div class="reveal" style="width:76px;height:4px;background:var(--purple);border-radius:2px;"></div>
+    <p class="reveal" style="font-family:var(--font);font-size:30px;font-weight:300;color:var(--t2);max-width:860px;line-height:1.4;">Détection des signaux de détresse · Empathie adaptative · Escalade crise</p>
+    <div class="reveal" style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+      <span class="badge purple">10 étapes</span>
+      <span class="badge purple">Multilingue FR/EN/AR</span>
+      <span class="badge purple">LLM-as-a-Judge</span>
+      <span class="badge purple">25/25 tests ✓</span>
+    </div>
+  </div>
+  <div class="pg">16 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 17 — MODULE 3 PIPELINE
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m3-pipeline">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 100% 0%,rgba(109,40,217,.15) 0%,transparent 52%),radial-gradient(ellipse at 0% 100%,rgba(14,116,144,.08) 0%,transparent 44%);"></div>
+  <div class="stripe-purple"></div>
+  <div class="sh">
+    <div class="sec-label purple reveal">Module 03 — Assistant Émotionnel</div>
+    <h2 class="stitle reveal">Pipeline en 10 étapes — Détection · Empathie · Escalade</h2>
+    <div class="abar purple reveal" style="margin-bottom:8px;"></div>
+  </div>
+  <div class="sb" style="top:218px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;height:100%;">
+
+      <!-- Left: infographic -->
+      <div class="reveal" style="display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.02);border:1px solid var(--card-bdr);border-radius:13px;padding:12px;overflow:hidden;">
+        <img src="../presentation/infographics/assistant_emotionnel.png" alt="Pipeline assistant émotionnel" style="max-width:100%;max-height:100%;object-fit:contain;">
+      </div>
+
+      <!-- Middle: steps 1-5 -->
+      <div style="display:flex;flex-direction:column;gap:5px;height:100%;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;">Analyse &amp; Détection</div>
+        <div class="iflow">
+          <div class="inode ir">
+            <div class="in" style="color:var(--red);">1</div>
+            <div><div class="il">Guardrail + Validation</div><div class="is">Injection · XSS · messages haineux → rejet immédiat</div></div>
+          </div>
+          <div class="iarr">↓ autorisé</div>
+          <div class="inode ip">
+            <div class="in" style="color:var(--purple);">2</div>
+            <div><div class="il">Détection de langue</div><div class="is">FR · EN · AR · Darija — adaptation multilingue</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ip">
+            <div class="in" style="color:var(--purple);">3</div>
+            <div><div class="il">Analyse du sentiment</div><div class="is">Détresse · Colère · Anxiété · Neutralité — 5 niveaux</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ir">
+            <div class="in" style="color:var(--red);">4</div>
+            <div><div class="il">Détection de crise</div><div class="is">Signaux d'idéation suicidaire → escalade sans LLM</div></div>
+            <span style="font-family:var(--mono);font-size:12px;background:var(--red-l);color:var(--red);padding:3px 9px;border-radius:4px;font-weight:700;white-space:nowrap;flex-shrink:0;align-self:center;">🔴 CRISE</span>
+          </div>
+          <div class="iarr">↓ non-crise</div>
+          <div class="inode ip">
+            <div class="in" style="color:var(--purple);">5</div>
+            <div><div class="il">Calibration de l'empathie</div><div class="is">Niveau détresse → ton adaptatif · validation émotionnelle</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: steps 6-10 + scores -->
+      <div style="display:flex;flex-direction:column;gap:5px;height:100%;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;">Génération &amp; Réponse</div>
+        <div class="iflow">
+          <div class="inode ic">
+            <div class="in" style="color:var(--cyan);">6</div>
+            <div><div class="il">Contexte Redis</div><div class="is">6 derniers échanges · profil émotionnel cumulé · TTL 24h</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ic">
+            <div class="in" style="color:var(--cyan);">7</div>
+            <div><div class="il">Assemblage prompt empathique</div><div class="is">[Sentiment]+[Profil]+[Historique]+[Langue]</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ip">
+            <div class="in" style="color:var(--purple);">8</div>
+            <div><div class="il">LLM — génération empathique</div><div class="is">temp=0.7 · réponse chaleureuse · validation émotions</div></div>
+          </div>
+          <div class="iarr">↓</div>
+          <div class="inode ig">
+            <div class="in" style="color:var(--green);">9–10</div>
+            <div><div class="il">Post-traitement + Réponse</div><div class="is">bleach.clean() · ressources urgence si détresse · session</div></div>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:16px 18px;background:rgba(109,40,217,.07);border:1px solid rgba(109,40,217,.22);border-radius:9px;">
+          <div style="font-family:var(--mono);font-size:13px;color:var(--purple);letter-spacing:.1em;font-weight:700;margin-bottom:10px;">LLM-AS-A-JUDGE</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:var(--font);font-size:18px;color:var(--t2);">Concision</span><span style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green);">1.00</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:var(--font);font-size:18px;color:var(--t2);">Empathie</span><span style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green);">0.95</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:var(--font);font-size:18px;color:var(--t2);">Sécurité</span><span style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--green);">0.93</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="pg">17 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 18 — MODULE 3 DEMO A (conversation normale + ressources)
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m3-demo-a">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 40% 0%,rgba(109,40,217,.14) 0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(14,116,144,.07) 0%,transparent 44%);"></div>
+  <div class="stripe-purple"></div>
+  <div style="position:absolute;top:30px;left:88px;right:88px;display:flex;align-items:center;justify-content:space-between;z-index:1;">
+    <div>
+      <div style="font-family:var(--mono);font-size:15px;letter-spacing:.2em;color:var(--purple);text-transform:uppercase;margin-bottom:8px;">Module 03 — Assistant Émotionnel · Démonstration 1/2</div>
+      <div style="font-family:var(--font);font-size:48px;font-weight:800;color:var(--t1);letter-spacing:-.025em;line-height:1.1;">Empathie adaptative &amp; Orientation vers les ressources</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <span class="badge purple">Empathie 0.95</span>
+      <span class="badge purple">Multilingue</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;top:158px;left:88px;right:88px;bottom:62px;display:grid;grid-template-columns:1fr 1fr;gap:28px;z-index:1;">
+
+    <!-- Screenshot 1: Normal emotional conversation -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="reveal screen-frame" style="flex:1;overflow:hidden;background:#f8fafc;">
+        <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/emotionelle-interface-utilisateur.png"
+             alt="Interface conversation émotionnelle normale"
+             style="width:100%;height:100%;object-fit:cover;object-position:top;">
+      </div>
+      <div class="reveal" style="padding:16px 20px;background:rgba(109,40,217,.06);border:1px solid rgba(109,40,217,.18);border-radius:10px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--purple);letter-spacing:.13em;font-weight:700;margin-bottom:6px;">CONVERSATION EMPATHIQUE</div>
+        <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">Ton adapté au niveau de détresse · Validation émotionnelle · Réponse chaleureuse et sécurisante</div>
+      </div>
+    </div>
+
+    <!-- Screenshot 2: Empathy + resources -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="reveal screen-frame" style="flex:1;overflow:hidden;background:#f8fafc;">
+        <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/empathie-emotionelle-interface.png"
+             alt="Réponse empathique avec ressources"
+             style="width:100%;height:100%;object-fit:cover;object-position:top;">
+      </div>
+      <div class="reveal" style="padding:16px 20px;background:rgba(21,128,61,.06);border:1px solid rgba(21,128,61,.18);border-radius:10px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--green);letter-spacing:.13em;font-weight:700;margin-bottom:6px;">RESSOURCES ET ORIENTATION</div>
+        <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;">Liens vers ressources Netethic · Orientation vers professionnels · Profil émotionnel cumulé en session</div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">18 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 19 — MODULE 3 DEMO B (détection de crise — large)
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m3-demo-b">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 0%,rgba(220,38,38,.16) 0%,transparent 50%),radial-gradient(ellipse at 10% 100%,rgba(109,40,217,.08) 0%,transparent 44%);"></div>
+  <div class="stripe-purple"></div>
+  <div style="position:absolute;top:30px;left:88px;right:88px;display:flex;align-items:center;justify-content:space-between;z-index:1;">
+    <div>
+      <div style="font-family:var(--mono);font-size:15px;letter-spacing:.2em;color:var(--red);text-transform:uppercase;margin-bottom:8px;">Module 03 — Assistant Émotionnel · Démonstration 2/2</div>
+      <div style="font-family:var(--font);font-size:48px;font-weight:800;color:var(--t1);letter-spacing:-.025em;line-height:1.1;">Détection de crise — Escalade sans LLM · Zéro risque</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <span class="badge red">🔴 Urgence</span>
+      <span class="badge purple">25/25 tests</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;top:158px;left:88px;right:88px;bottom:62px;display:grid;grid-template-columns:1fr 380px;gap:28px;z-index:1;">
+
+    <!-- Screenshot: Crisis detection (large) -->
+    <div class="reveal screen-frame" style="overflow:hidden;background:#f8fafc;">
+      <img src="../Rapport_ISTIC_2025_2026_v2/interface-png/emotionelle-crise-interface.png"
+           alt="Détection et gestion d'une crise"
+           style="width:100%;height:100%;object-fit:cover;object-position:top;">
+    </div>
+
+    <!-- Right: annotations -->
+    <div style="display:flex;flex-direction:column;gap:16px;justify-content:center;">
+      <div class="reveal" style="padding:24px 26px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.25);border-left:4px solid var(--red);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:.13em;font-weight:700;margin-bottom:10px;">🔴 CRISE DÉTECTÉE</div>
+        <div style="font-family:var(--font);font-size:21px;color:var(--t2);line-height:1.5;">Idéation suicidaire détectée → escalade <strong style="color:var(--red);">sans LLM</strong></div>
+      </div>
+      <div class="reveal" style="padding:24px 26px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.20);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--amber);letter-spacing:.13em;font-weight:700;margin-bottom:10px;">POURQUOI SANS LLM ?</div>
+        <div style="font-family:var(--font);font-size:21px;color:var(--t2);line-height:1.5;">Un LLM peut halluciner en cas extrême. La détection de crise est déterministe — zéro compromis.</div>
+      </div>
+      <div class="reveal" style="padding:24px 26px;background:rgba(14,116,144,.06);border:1px solid rgba(14,116,144,.20);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.13em;font-weight:700;margin-bottom:10px;">RÉPONSE IMMÉDIATE</div>
+        <div style="font-family:var(--font);font-size:21px;color:var(--t2);line-height:1.55;">
+          Numéros d'urgence fournis<br>
+          Ressources d'aide affichées<br>
+          Alerte plateforme Netethic
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">19 / 30</div>
+</section>
+
+
+</main>
+</div>
+<div class="pg-ui"><div class="pg-fill" id="pgFill"></div></div>
+<div class="pg-count" id="pgCount">13 / 30</div>
+
+<script>
+const SECTION_CONFIG = { globalStart: 13, globalTotal: 30, next: 'modules_khalil.html', prev: 'solution.html' };
+class SlidePresentation {
+  constructor() {
+    this.slides=document.querySelectorAll('.slide');this.total=this.slides.length;this.current=0;
+    this.stage=document.getElementById('deckStage');this.pgFill=document.getElementById('pgFill');
+    this.pgCount=document.getElementById('pgCount');this.touchX=0;
+    this.setupScale();this.setupKeyboard();this.setupTouch();this.setupWheel();
+    this.showSlide(window.location.hash==='#last'?this.total-1:0);
+  }
+  setupScale(){const s=()=>{const f=Math.min(window.innerWidth/1920,window.innerHeight/1080);const x=(window.innerWidth-1920*f)/2,y=(window.innerHeight-1080*f)/2;this.stage.style.transform=`translate(${x}px,${y}px) scale(${f})`;};s();window.addEventListener('resize',s);}
+  setupKeyboard(){document.addEventListener('keydown',e=>{if(e.target.getAttribute('contenteditable'))return;if(['ArrowRight','ArrowDown','Space','PageDown'].includes(e.code)){e.preventDefault();this.next();}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.code)){e.preventDefault();this.prev();}else if(e.code==='Home'){e.preventDefault();this.showSlide(0);}else if(e.code==='End'){e.preventDefault();this.showSlide(this.total-1);}});}
+  setupTouch(){this.stage.addEventListener('touchstart',e=>{this.touchX=e.changedTouches[0].screenX;},{passive:true});this.stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-this.touchX;if(Math.abs(dx)>40)dx<0?this.next():this.prev();},{passive:true});}
+  setupWheel(){let last=0;document.addEventListener('wheel',e=>{const now=Date.now();if(now-last<500)return;last=now;e.deltaY>0?this.next():this.prev();},{passive:true});}
+  next(){this.current===this.total-1&&SECTION_CONFIG.next?(window.location.href=SECTION_CONFIG.next):this.showSlide(this.current+1);}
+  prev(){this.current===0&&SECTION_CONFIG.prev?(window.location.href=SECTION_CONFIG.prev+'#last'):this.showSlide(this.current-1);}
+  showSlide(idx){const i=Math.max(0,Math.min(idx,this.total-1));this.slides.forEach((s,n)=>{s.classList.toggle('active',n===i);s.classList.toggle('visible',n===i);});this.current=i;const g=SECTION_CONFIG.globalStart+i;const pct=(g/SECTION_CONFIG.globalTotal*100).toFixed(1);this.pgFill.style.width=pct+'%';this.pgCount.textContent=`${String(g).padStart(2,'0')} / ${SECTION_CONFIG.globalTotal}`;}
+}
+const deck = new SlidePresentation();
+</script>
+</body>
+</html>

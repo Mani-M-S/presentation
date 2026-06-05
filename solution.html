@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetEthic AI — Solution & Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ══ DESIGN SYSTEM (shared across all files) ══ */
+:root {
+  --bg:#f0f4f8; --slide-bg:#ffffff; --grid-c:rgba(14,116,144,0.04);
+  --card-bg:rgba(15,23,42,0.035); --card-bdr:rgba(15,23,42,0.09);
+  --t1:#0f172a; --t2:#334155; --t3:#94a3b8;
+  --cyan:#0e7490; --cyan-l:rgba(14,116,144,0.12);
+  --amber:#c2410c; --amber-l:rgba(194,65,12,0.12);
+  --green:#15803d; --green-l:rgba(21,128,61,0.12);
+  --red:#dc2626; --red-l:rgba(220,38,38,0.10);
+  --purple:#6d28d9; --purple-l:rgba(109,40,217,0.10);
+  --blue:#1d4ed8; --blue-l:rgba(29,78,216,0.10);
+  --font:'Urbanist',sans-serif; --mono:'JetBrains Mono',monospace;
+  --spring:cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--bg);}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--slide-bg);}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img,video,canvas,svg{max-width:100%;max-height:100%;}
+@media print{html,body{width:1920px;height:auto;overflow:visible;background:#fff;}.deck-viewport{position:static;overflow:visible;}.deck-stage{position:static;width:auto;height:auto;transform:none!important;}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always;}.slide:last-child{break-after:auto;page-break-after:auto;}.pg-ui{display:none!important;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.1ms!important;}}
+.slide{background:linear-gradient(var(--grid-c) 1px,transparent 1px),linear-gradient(90deg,var(--grid-c) 1px,transparent 1px),var(--slide-bg);background-size:80px 80px,80px 80px;}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--spring),transform .5s var(--spring);}
+.slide.visible .reveal{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.05s;}.reveal:nth-child(2){transition-delay:.13s;}.reveal:nth-child(3){transition-delay:.21s;}
+.reveal:nth-child(4){transition-delay:.29s;}.reveal:nth-child(5){transition-delay:.37s;}.reveal:nth-child(6){transition-delay:.45s;}
+.reveal:nth-child(7){transition-delay:.53s;}.reveal:nth-child(8){transition-delay:.61s;}.reveal:nth-child(9){transition-delay:.69s;}
+.reveal:nth-child(10){transition-delay:.77s;}
+.sh{position:absolute;top:64px;left:88px;right:88px;}
+.sb{position:absolute;top:266px;left:88px;right:88px;bottom:60px;}
+.s-bg{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.sec-label{font-family:var(--mono);font-size:21px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);margin-bottom:16px;}
+.sec-label.cyan{color:var(--cyan);}.sec-label.amber{color:var(--amber);}.sec-label.green{color:var(--green);}
+.sec-label.red{color:var(--red);}.sec-label.purple{color:var(--purple);}
+.stitle{font-family:var(--font);font-size:76px;font-weight:800;color:var(--t1);line-height:1.06;letter-spacing:-.035em;margin-bottom:22px;}
+.abar{width:0;height:4px;border-radius:2px;background:var(--cyan);margin-bottom:36px;transition:width .75s var(--spring) .38s;}
+.abar.amber{background:var(--amber);}.abar.purple{background:var(--purple);}.abar.green{background:var(--green);}.abar.red{background:var(--red);}
+.slide.visible .abar{width:64px;}
+.card{background:var(--card-bg);border:1px solid var(--card-bdr);border-radius:13px;padding:30px 36px;}
+.card.cyan{border-left:4px solid var(--cyan);background:var(--cyan-l);}
+.card.amber{border-left:4px solid var(--amber);background:var(--amber-l);}
+.card.green{border-left:4px solid var(--green);background:var(--green-l);}
+.card.red{border-left:4px solid var(--red);background:var(--red-l);}
+.card.purple{border-left:4px solid var(--purple);background:var(--purple-l);}
+.ctitle{font-family:var(--font);font-size:30px;font-weight:700;color:var(--t1);margin-bottom:16px;}
+.blist{list-style:none;display:flex;flex-direction:column;gap:14px;}
+.blist li{display:flex;align-items:flex-start;gap:14px;font-family:var(--font);font-size:27px;color:var(--t2);line-height:1.55;}
+.blist li::before{content:'▸';color:var(--cyan);font-size:17px;margin-top:6px;flex-shrink:0;}
+.blist.amber li::before{color:var(--amber);}.blist.green li::before{color:var(--green);}
+.blist.red li::before{color:var(--red);}.blist.purple li::before{color:var(--purple);}
+.blist.sm li{font-size:24px;gap:11px;}.blist.sm li::before{font-size:14px;margin-top:5px;}
+.badge{display:inline-block;padding:4px 13px;border-radius:100px;font-family:var(--mono);font-size:14px;font-weight:700;white-space:nowrap;}
+.badge.cyan{background:var(--cyan-l);color:var(--cyan);}.badge.amber{background:var(--amber-l);color:var(--amber);}
+.badge.green{background:var(--green-l);color:var(--green);}.badge.red{background:var(--red-l);color:var(--red);}
+.badge.purple{background:var(--purple-l);color:var(--purple);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px;}
+.code{background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.10);border-radius:8px;padding:22px 26px;font-family:var(--mono);font-size:18px;line-height:1.85;color:var(--t2);white-space:pre;}
+.c{color:var(--cyan);}.a{color:var(--amber);}.g{color:var(--green);}.r{color:var(--red);}.p{color:var(--purple);}.d{color:var(--t3);}
+.pg{position:absolute;bottom:26px;right:88px;font-family:var(--mono);font-size:15px;color:var(--t3);letter-spacing:.08em;}
+.pg-ui{position:fixed;bottom:0;left:0;right:0;height:2px;z-index:2000;background:rgba(15,23,42,.07);}
+.pg-fill{height:100%;background:var(--cyan);transition:width .35s var(--spring);}
+.pg-count{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:12px;color:rgba(15,23,42,.28);letter-spacing:.12em;z-index:2000;}
+/* tech card icon */
+.tech-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:20px;font-weight:800;flex-shrink:0;}
+/* pipeline step */
+.pipe-step{display:flex;align-items:flex-start;gap:14px;padding:12px 16px;border-radius:8px;border:1px solid var(--card-bdr);background:var(--card-bg);}
+.pipe-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--t3);min-width:28px;flex-shrink:0;padding-top:2px;}
+.pipe-title{font-family:var(--font);font-size:20px;font-weight:700;color:var(--t1);line-height:1.2;}
+.pipe-sub{font-family:var(--mono);font-size:13px;color:var(--t3);margin-top:2px;line-height:1.4;}
+.pipe-arr{font-size:13px;color:var(--t3);padding:1px 0 1px 30px;line-height:1.2;}
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 07 — CRITIQUE DE L'EXISTANT
+     ════════════════════════════════════════════════════════ -->
+<section class="slide active" id="s-critique">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 0%,rgba(220,38,38,.12) 0%,transparent 50%),radial-gradient(ellipse at 100% 80%,rgba(194,65,12,.08) 0%,transparent 42%),radial-gradient(ellipse at 0% 100%,rgba(14,116,144,.07) 0%,transparent 40%);"></div>
+  <div class="sh">
+    <div class="sec-label red reveal">Critique de l'existant</div>
+    <h2 class="stitle reveal">Ce qui existe — et ce qui manque</h2>
+    <p class="reveal" style="font-family:var(--font);font-size:20px;color:var(--t2);font-style:italic;margin:-8px 0 4px;">Des solutions partielles, réactives, disponibles uniquement aux heures ouvrées</p>
+    <div class="abar red reveal" style="margin-bottom:10px;"></div>
+  </div>
+  <div class="sb" style="top:248px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;height:100%;">
+
+      <!-- Existing solutions -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--t3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:2px;">Solutions existantes</div>
+
+        <div class="reveal" style="padding:18px 22px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-left:3px solid var(--t3);border-radius:8px;">
+          <div style="font-family:var(--font);font-size:22px;font-weight:700;color:var(--t1);margin-bottom:6px;">Lignes téléphoniques d'écoute</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);">Signalements manuels — <span style="color:var(--red);">heures ouvrées uniquement</span></div>
+        </div>
+
+        <div class="reveal" style="padding:18px 22px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-left:3px solid var(--t3);border-radius:8px;">
+          <div style="font-family:var(--font);font-size:22px;font-weight:700;color:var(--t1);margin-bottom:6px;">SafeBar (e-Enfance)</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);">Outil de signalement — <span style="color:var(--red);">intervient après identification</span>, aucune détection préventive</div>
+        </div>
+
+        <div class="reveal" style="padding:18px 22px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-left:3px solid var(--t3);border-radius:8px;">
+          <div style="font-family:var(--font);font-size:22px;font-weight:700;color:var(--t1);margin-bottom:6px;">Stop Bashing! (mobile)</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);">Capture + envoi aux parents — <span style="color:var(--red);">processus 100 % manuel</span>, pas d'analyse IA</div>
+        </div>
+
+        <div class="reveal" style="padding:18px 22px;background:rgba(194,65,12,.05);border:1px solid rgba(194,65,12,.2);border-left:3px solid var(--amber);border-radius:8px;">
+          <div style="font-family:var(--font);font-size:22px;font-weight:700;color:var(--t1);margin-bottom:6px;">Netethic (actuel)</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);">Tableau de bord + signalements — <span style="color:var(--amber);">zéro assistant IA, zéro support automatisé</span></div>
+        </div>
+      </div>
+
+      <!-- Gap analysis -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:.16em;text-transform:uppercase;margin-bottom:2px;">Lacunes identifiées</div>
+
+        <div class="reveal" style="padding:22px 26px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.20);border-radius:10px;flex:1;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="font-family:var(--mono);font-size:14px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;text-align:left;padding:10px 14px;border-bottom:1px solid var(--card-bdr);">Besoin</th>
+                <th style="font-family:var(--mono);font-size:14px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:10px 14px;border-bottom:1px solid var(--card-bdr);">Couvert ?</th>
+                <th style="font-family:var(--mono);font-size:14px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;text-align:left;padding:10px 14px;border-bottom:1px solid var(--card-bdr);">Notre réponse</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="font-family:var(--font);font-size:20px;color:var(--t2);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">Accueil visiteurs 24/7</td><td style="text-align:center;font-size:22px;padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">✗</td><td style="font-family:var(--mono);font-size:16px;color:var(--cyan);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">Module 1 — Noa</td></tr>
+              <tr><td style="font-family:var(--font);font-size:20px;color:var(--t2);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">Support personnel établissements</td><td style="text-align:center;font-size:22px;padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">✗</td><td style="font-family:var(--mono);font-size:16px;color:var(--amber);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">Module 2 — Technique</td></tr>
+              <tr><td style="font-family:var(--font);font-size:20px;color:var(--t2);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">Soutien élèves en détresse</td><td style="text-align:center;font-size:22px;padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">✗</td><td style="font-family:var(--mono);font-size:16px;color:var(--purple);padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.05);">Module 3 — Émotionnel</td></tr>
+              <tr><td style="font-family:var(--font);font-size:20px;color:var(--t2);padding:12px 14px;">Analyse automatique des textes</td><td style="text-align:center;font-size:22px;padding:12px 14px;">✗</td><td style="font-family:var(--mono);font-size:16px;color:var(--green);padding:12px 14px;">Module 4 — Classificateur</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">06 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 08 — SOLUTION PROPOSÉE
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-solution">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 2% 2%,rgba(14,116,144,.14) 0%,transparent 42%),radial-gradient(ellipse at 98% 2%,rgba(194,65,12,.12) 0%,transparent 42%),radial-gradient(ellipse at 98% 98%,rgba(109,40,217,.10) 0%,transparent 40%),radial-gradient(ellipse at 2% 98%,rgba(21,128,61,.10) 0%,transparent 40%);"></div>
+  <div class="sh">
+    <div class="sec-label cyan reveal">Solution</div>
+    <h2 class="stitle reveal">Quatre modules IA complémentaires</h2>
+    <p class="reveal" style="font-family:var(--font);font-size:20px;color:var(--t2);font-style:italic;margin:-8px 0 4px;">Python · FastAPI · Docker Compose — couvrant tous les cas d'usage de la plateforme</p>
+    <div class="abar reveal" style="margin-bottom:10px;"></div>
+  </div>
+  <div class="sb" style="top:248px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:20px;height:100%;">
+
+      <!-- Module 1 -->
+      <div class="reveal" style="padding:28px 28px;background:rgba(14,116,144,.07);border:1px solid rgba(14,116,144,.24);border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;">Module 01</div>
+          <div style="font-family:var(--font);font-size:30px;font-weight:800;color:var(--t1);margin-bottom:10px;line-height:1.1;">Noa<br>Assistant</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;margin-bottom:16px;">Assistant public disponible 24h/24 sur le site Netethic. Répond aux visiteurs, gère les réservations de démo.</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.5;padding:12px 16px;background:rgba(14,116,144,.08);border-radius:8px;">
+            <strong style="color:var(--cyan);">Valeur :</strong> Aucun visiteur sans réponse, jamais. Élimination des coûts de support manuel.
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge cyan">RAG public</span>
+          <span class="badge cyan">Claude/Gemini</span>
+          <span class="badge cyan">React</span>
+        </div>
+      </div>
+
+      <!-- Module 2 -->
+      <div class="reveal" style="padding:28px 28px;background:rgba(194,65,12,.07);border:1px solid rgba(194,65,12,.24);border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;">Module 02</div>
+          <div style="font-family:var(--font);font-size:30px;font-weight:800;color:var(--t1);margin-bottom:10px;line-height:1.1;">Assistant<br>Technique</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;margin-bottom:16px;">Support pour le personnel des établissements. Répond sur les fonctionnalités, gère les RDV et les signalements.</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.5;padding:12px 16px;background:rgba(194,65,12,.08);border-radius:8px;">
+            <strong style="color:var(--amber);">Valeur :</strong> Réduction des tickets support. Personnel autonome sur la plateforme.
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge amber">RAG scopé</span>
+          <span class="badge amber">Mistral-7B</span>
+          <span class="badge amber">RAGAS</span>
+        </div>
+      </div>
+
+      <!-- Module 3 -->
+      <div class="reveal" style="padding:28px 28px;background:rgba(109,40,217,.07);border:1px solid rgba(109,40,217,.24);border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--purple);letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;">Module 03</div>
+          <div style="font-family:var(--font);font-size:30px;font-weight:800;color:var(--t1);margin-bottom:10px;line-height:1.1;">Assistant<br>Émotionnel</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;margin-bottom:16px;">Détecte les signaux de détresse. Répond avec empathie. Escalade automatique vers les numéros d'urgence.</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.5;padding:12px 16px;background:rgba(109,40,217,.08);border-radius:8px;">
+            <strong style="color:var(--purple);">Valeur :</strong> Présence pour les victimes sans barrière psychologique. Zéro délai.
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge purple">Multilingue</span>
+          <span class="badge purple">Crise</span>
+          <span class="badge purple">Urgence</span>
+        </div>
+      </div>
+
+      <!-- Module 4 -->
+      <div class="reveal" style="padding:28px 28px;background:rgba(21,128,61,.07);border:1px solid rgba(21,128,61,.24);border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;">Module 04</div>
+          <div style="font-family:var(--font);font-size:30px;font-weight:800;color:var(--t1);margin-bottom:10px;line-height:1.1;">Classifi-<br>cateur</div>
+          <div style="font-family:var(--font);font-size:20px;color:var(--t2);line-height:1.5;margin-bottom:16px;">Analyse automatique des textes. Identifie 16 comportements. Ancré dans le Code Pénal français.</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.5;padding:12px 16px;background:rgba(21,128,61,.08);border-radius:8px;">
+            <strong style="color:var(--green);">Valeur :</strong> Détection objective et légalement fondée. Alertes prioritaires automatiques.
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="badge green">16 labels</span>
+          <span class="badge green">Code Pénal</span>
+          <span class="badge green">RAG juridique</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="pg">07 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 09 — TECHNOLOGY CHOICES — BACKEND & INFRA
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-tech-backend">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 20% 80%,rgba(14,116,144,.12) 0%,transparent 48%),radial-gradient(ellipse at 80% 20%,rgba(220,38,38,.09) 0%,transparent 46%);"></div>
+  <div class="sh">
+    <div class="sec-label cyan reveal">Choix Technologiques — Backend &amp; Infrastructure</div>
+    <h2 class="stitle reveal">Chaque technologie est justifiée</h2>
+    <div class="abar reveal" style="margin-bottom:10px;"></div>
+  </div>
+  <div class="sb" style="top:240px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:18px;height:100%;">
+
+      <!-- FastAPI -->
+      <div class="reveal" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:24px 26px;background:rgba(14,116,144,.07);border:1px solid rgba(14,116,144,.22);border-radius:12px;flex:1;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div class="tech-icon" style="background:rgba(14,116,144,.15);color:var(--cyan);">F</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;">API Layer</div>
+              <div style="font-family:var(--font);font-size:28px;font-weight:800;color:var(--t1);">FastAPI</div>
+            </div>
+          </div>
+          <ul class="blist sm" style="gap:9px;">
+            <li>Framework Python async — support natif des requêtes concurrentes</li>
+            <li>Validation automatique via <strong style="color:var(--t1);">Pydantic</strong> (OWASP LLM07)</li>
+            <li>Documentation OpenAPI générée automatiquement</li>
+            <li>Déployé dans chaque conteneur Docker du module</li>
+          </ul>
+        </div>
+        <div style="padding:12px 16px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:8px;font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.4;">
+          <span style="font-family:var(--mono);font-size:12px;background:rgba(220,38,38,.1);color:var(--red);padding:2px 7px;border-radius:4px;font-weight:700;margin-right:6px;">vs</span>
+          Flask : sans async natif. Django : trop lourd pour un service IA dédié.
+        </div>
+      </div>
+
+      <!-- Redis -->
+      <div class="reveal" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:24px 26px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.22);border-radius:12px;flex:1;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div class="tech-icon" style="background:rgba(220,38,38,.13);color:var(--red);">R</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;">Mémoire conversationnelle</div>
+              <div style="font-family:var(--font);font-size:28px;font-weight:800;color:var(--t1);">Redis</div>
+            </div>
+          </div>
+          <ul class="blist sm red" style="gap:9px;">
+            <li>Stockage en mémoire ultra-rapide — latence &lt; 1 ms</li>
+            <li>Historique de conversation par session (6 derniers échanges)</li>
+            <li><strong style="color:var(--t1);">TTL automatique</strong> — suppression après 24h (RGPD)</li>
+            <li>Cache sémantique des réponses PDF (TTL 48h)</li>
+          </ul>
+        </div>
+        <div style="padding:12px 16px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:8px;font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.4;">
+          <span style="font-family:var(--mono);font-size:12px;background:rgba(220,38,38,.1);color:var(--red);padding:2px 7px;border-radius:4px;font-weight:700;margin-right:6px;">vs</span>
+          PostgreSQL : conversations éphémères — Redis offre le TTL natif et le type liste idéal.
+        </div>
+      </div>
+
+      <!-- Docker Compose -->
+      <div class="reveal" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:24px 26px;background:rgba(29,78,216,.06);border:1px solid rgba(29,78,216,.22);border-radius:12px;flex:1;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div class="tech-icon" style="background:rgba(29,78,216,.13);color:var(--blue);">D</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--blue);letter-spacing:.14em;text-transform:uppercase;">Orchestration</div>
+              <div style="font-family:var(--font);font-size:28px;font-weight:800;color:var(--t1);">Docker Compose</div>
+            </div>
+          </div>
+          <ul class="blist sm" style="gap:9px;--cyan:var(--blue);">
+            <li>Chaque module dans son conteneur isolé</li>
+            <li>Déploiement reproductible en une commande : <span style="font-family:var(--mono);color:var(--blue);font-size:16px;">docker compose up</span></li>
+            <li>Réseau interne privé — services non exposés à l'extérieur</li>
+            <li>Volumes persistants pour ChromaDB</li>
+          </ul>
+        </div>
+        <div style="padding:12px 16px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:8px;font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.4;">
+          <span style="font-family:var(--mono);font-size:12px;background:rgba(220,38,38,.1);color:var(--red);padding:2px 7px;border-radius:4px;font-weight:700;margin-right:6px;">vs</span>
+          Kubernetes : complexité injustifiée pour 4 services. Compose suffit pour le contexte SaaS actuel.
+        </div>
+      </div>
+
+      <!-- PostgreSQL / Pydantic -->
+      <div class="reveal" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:24px 26px;background:rgba(21,128,61,.06);border:1px solid rgba(21,128,61,.22);border-radius:12px;flex:1;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div class="tech-icon" style="background:rgba(21,128,61,.13);color:var(--green);">P</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.14em;text-transform:uppercase;">Données métier</div>
+              <div style="font-family:var(--font);font-size:28px;font-weight:800;color:var(--t1);">PostgreSQL</div>
+            </div>
+          </div>
+          <ul class="blist sm green" style="gap:9px;">
+            <li>Stockage des RDV, signalements et bugs (Module 2)</li>
+            <li>Données persistantes et transactionnelles — ACID complet</li>
+            <li>Pydantic valide les données avant chaque insertion</li>
+            <li>Séparation claire : état conversatoire (Redis) vs données métier (PG)</li>
+          </ul>
+        </div>
+        <div style="padding:12px 16px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:8px;font-family:var(--font);font-size:18px;color:var(--t2);line-height:1.4;">
+          <span style="font-family:var(--mono);font-size:12px;background:rgba(220,38,38,.1);color:var(--red);padding:2px 7px;border-radius:4px;font-weight:700;margin-right:6px;">vs</span>
+          SQLite : pas adapté à un SaaS multi-utilisateurs. MongoDB : schéma strict requis pour les RDV.
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="pg">08 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 10 — TECHNOLOGY CHOICES — AI / LLM STACK
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-tech-ai">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 80% 20%,rgba(109,40,217,.12) 0%,transparent 48%),radial-gradient(ellipse at 20% 80%,rgba(14,116,144,.10) 0%,transparent 46%);"></div>
+  <div class="sh">
+    <div class="sec-label purple reveal">Choix Technologiques — IA &amp; LLM Stack</div>
+    <h2 class="stitle reveal">Le cerveau du système</h2>
+    <div class="abar purple reveal" style="margin-bottom:10px;"></div>
+  </div>
+  <div class="sb" style="top:240px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;height:100%;">
+
+      <!-- vLLM -->
+      <div class="reveal" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:26px 28px;background:rgba(109,40,217,.07);border:1px solid rgba(109,40,217,.24);border-radius:12px;flex:1;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div class="tech-icon" style="background:rgba(109,40,217,.15);color:var(--purple);">V</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--purple);letter-spacing:.14em;text-transform:uppercase;">Moteur d'inférence LLM</div>
+              <div style="font-family:var(--font);font-size:30px;font-weight:800;color:var(--t1);">vLLM</div>
+            </div>
+          </div>
+          <ul class="blist sm purple" style="gap:10px;">
+            <li>Serveur d'inférence pour <strong style="color:var(--t1);">Mistral-7B</strong> en local (kaisens.fr)</li>
+            <li><strong style="color:var(--t1);">PagedAttention</strong> — optimisation mémoire GPU</li>
+            <li>API compatible OpenAI — zéro friction d'intégration</li>
+            <li>Batching continu — débit élevé en production</li>
+          </ul>
+          <div style="margin-top:14px;padding:10px 14px;background:rgba(109,40,217,.08);border-radius:8px;font-family:var(--font);font-size:17px;color:var(--t2);">
+            <span style="color:var(--red);font-weight:700;">vs</span> Ollama : conçu pour l'usage personnel — vLLM offre le batching production.
+          </div>
+        </div>
+      </div>
+
+      <!-- ChromaDB -->
+      <div class="reveal" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:26px 28px;background:rgba(14,116,144,.07);border:1px solid rgba(14,116,144,.24);border-radius:12px;flex:1;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div class="tech-icon" style="background:rgba(14,116,144,.15);color:var(--cyan);">C</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;">Base vectorielle</div>
+              <div style="font-family:var(--font);font-size:30px;font-weight:800;color:var(--t1);">ChromaDB</div>
+            </div>
+          </div>
+          <ul class="blist sm" style="gap:10px;">
+            <li>Stockage et recherche par similarité cosinus des embeddings</li>
+            <li>Filtrage par <strong style="color:var(--t1);">métadonnées</strong> — scope par catégorie (Module 2)</li>
+            <li>RAG juridique (Module 4) — Code Pénal indexé</li>
+            <li>Persistance disque — survie aux redémarrages</li>
+          </ul>
+          <div style="margin-top:14px;padding:10px 14px;background:rgba(14,116,144,.08);border-radius:8px;font-family:var(--font);font-size:17px;color:var(--t2);">
+            <span style="color:var(--red);font-weight:700;">vs</span> Pinecone : cloud uniquement — données sensibles restent en local.
+          </div>
+        </div>
+      </div>
+
+      <!-- Claude / Gemini + Sentence Transformers -->
+      <div class="reveal" style="display:flex;flex-direction:column;gap:14px;height:100%;">
+        <div style="padding:22px 26px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.22);border-radius:12px;flex:1;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;">LLM Externes — Module 1</div>
+          <div style="font-family:var(--font);font-size:26px;font-weight:800;color:var(--t1);margin-bottom:10px;">Claude / Gemini</div>
+          <ul class="blist sm amber" style="gap:9px;">
+            <li>Patron <strong style="color:var(--t1);">Strategy</strong> — bascule via variable d'env <span style="font-family:var(--mono);font-size:14px;color:var(--amber);">AGENT_PROVIDER</span></li>
+            <li>Tool use natif — boucle agentique pour Noa</li>
+            <li>Aucun remplacement de code requis pour changer de LLM</li>
+          </ul>
+        </div>
+        <div style="padding:22px 26px;background:rgba(21,128,61,.06);border:1px solid rgba(21,128,61,.22);border-radius:12px;flex:1;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;">Embeddings locaux</div>
+          <div style="font-family:var(--font);font-size:22px;font-weight:800;color:var(--t1);margin-bottom:10px;">sentence-transformers</div>
+          <ul class="blist sm green" style="gap:9px;">
+            <li><strong style="color:var(--t1);">multilingual-e5-base</strong> — 384d, multilingue</li>
+            <li>Aucun appel réseau, aucun coût d'API pour les embeddings</li>
+            <li>Comprend le sens — "combien ça coûte" → chunk "tarifs"</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="pg">09 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 11 — ARCHITECTURE GLOBALE
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-archi">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 50%,rgba(14,116,144,.12) 0%,transparent 55%),radial-gradient(ellipse at 10% 90%,rgba(194,65,12,.07) 0%,transparent 42%),radial-gradient(ellipse at 90% 10%,rgba(109,40,217,.06) 0%,transparent 42%);"></div>
+  <div class="sh">
+    <div class="sec-label cyan reveal">Architecture Globale</div>
+    <h2 class="stitle reveal">Vue d'ensemble du système</h2>
+    <p class="reveal" style="font-family:var(--font);font-size:20px;color:var(--t2);font-style:italic;margin:-8px 0 4px;">4 services indépendants · 1 infrastructure partagée · Docker Compose</p>
+    <div class="abar reveal" style="margin-bottom:10px;"></div>
+  </div>
+  <div class="sb" style="top:248px;">
+    <div style="display:grid;grid-template-columns:55% 1fr;gap:28px;height:100%;">
+
+      <!-- Architecture diagram -->
+      <div class="reveal" style="display:flex;align-items:center;justify-content:center;height:100%;background:rgba(15,23,42,.02);border:1px solid var(--card-bdr);border-radius:12px;padding:12px;overflow:hidden;">
+        <img src="../presentation/assets/use_case_global.png" alt="Architecture globale — cas d'utilisation" style="max-width:100%;max-height:100%;object-fit:contain;">
+      </div>
+
+      <!-- Right: breakdown -->
+      <div style="display:flex;flex-direction:column;gap:14px;height:100%;">
+
+        <div class="reveal" style="padding:18px 22px;background:rgba(14,116,144,.07);border:1px solid rgba(14,116,144,.22);border-radius:10px;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;">4 Services Modulaires</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;gap:10px;align-items:center;"><span style="font-family:var(--mono);font-size:13px;background:var(--cyan-l);color:var(--cyan);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;">M1</span><span style="font-family:var(--font);font-size:19px;color:var(--t2);">Noa — FastAPI + React, port 8001</span></div>
+            <div style="display:flex;gap:10px;align-items:center;"><span style="font-family:var(--mono);font-size:13px;background:var(--amber-l);color:var(--amber);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;">M2</span><span style="font-family:var(--font);font-size:19px;color:var(--t2);">Technique — FastAPI + Streamlit, port 8002</span></div>
+            <div style="display:flex;gap:10px;align-items:center;"><span style="font-family:var(--mono);font-size:13px;background:var(--purple-l);color:var(--purple);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;">M3</span><span style="font-family:var(--font);font-size:19px;color:var(--t2);">Émotionnel — FastAPI + Streamlit, port 8003</span></div>
+            <div style="display:flex;gap:10px;align-items:center;"><span style="font-family:var(--mono);font-size:13px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;">M4</span><span style="font-family:var(--font);font-size:19px;color:var(--t2);">Classificateur — FastAPI, port 8004</span></div>
+          </div>
+        </div>
+
+        <div class="reveal" style="padding:18px 22px;background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.16);border-radius:10px;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;">Infrastructure Partagée</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;gap:10px;align-items:center;"><span style="font-family:var(--mono);font-size:13px;background:var(--red-l);color:var(--red);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;">Redis</span><span style="font-family:var(--font);font-size:19px;color:var(--t2);">Mémoire conversationnelle — TTL 24h</span></div>
+            <div style="display:flex;gap:10px;align-items:center;"><span style="font-family:var(--mono);font-size:13px;background:var(--cyan-l);color:var(--cyan);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;">ChromaDB</span><span style="font-family:var(--font);font-size:19px;color:var(--t2);">Bases vectorielles par module</span></div>
+            <div style="display:flex;gap:10px;align-items:center;"><span style="font-family:var(--mono);font-size:13px;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:4px;font-weight:700;flex-shrink:0;">vLLM</span><span style="font-family:var(--font);font-size:19px;color:var(--t2);">Mistral-7B sur kaisens.fr (GPU)</span></div>
+          </div>
+        </div>
+
+        <div class="reveal" style="padding:18px 22px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:10px;flex:1;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--t3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;">Acteurs du système</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="font-family:var(--font);font-size:19px;color:var(--t2);">👥 <strong style="color:var(--t1);">Visiteurs</strong> — accès public via Noa (M1)</div>
+            <div style="font-family:var(--font);font-size:19px;color:var(--t2);">🏫 <strong style="color:var(--t1);">Personnel établissements</strong> — M2 interne</div>
+            <div style="font-family:var(--font);font-size:19px;color:var(--t2);">👦 <strong style="color:var(--t1);">Élèves</strong> — soutien émotionnel M3</div>
+            <div style="font-family:var(--font);font-size:19px;color:var(--t2);">⚙️ <strong style="color:var(--t1);">Plateforme Netethic</strong> — appelle M4 pour analyse</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="pg">10 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 12 — PIPELINE COMMUN
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-pipeline-commun">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 0%,rgba(14,116,144,.14) 0%,transparent 50%),radial-gradient(ellipse at 100% 90%,rgba(194,65,12,.08) 0%,transparent 42%);"></div>
+  <div class="sh">
+    <div class="sec-label cyan reveal">Pipeline Commun</div>
+    <h2 class="stitle reveal">Un pipeline partagé par tous les modules</h2>
+    <p class="reveal" style="font-family:var(--font);font-size:20px;color:var(--t2);font-style:italic;margin:-8px 0 4px;">Sécurité en entrée · Contexte Redis · Classification · Récupération RAG · LLM · Réponse sécurisée</p>
+    <div class="abar reveal" style="margin-bottom:10px;"></div>
+  </div>
+  <div class="sb" style="top:246px;">
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:28px;height:100%;">
+
+      <!-- Pipeline visual -->
+      <div class="reveal" style="display:flex;align-items:stretch;justify-content:center;height:100%;background:rgba(15,23,42,.02);border:1px solid var(--card-bdr);border-radius:12px;padding:16px;overflow:hidden;">
+        <img src="../presentation/assets/deploiement_modules.png" alt="Pipeline commun — déploiement modules" style="max-width:100%;max-height:100%;object-fit:contain;">
+      </div>
+
+      <!-- Right: key steps text -->
+      <div style="display:flex;flex-direction:column;gap:10px;height:100%;">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--t3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px;">Étapes communes à tous les modules</div>
+
+        <div class="reveal" style="padding:12px 16px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.20);border-left:3px solid var(--red);border-radius:8px;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.1em;font-weight:700;margin-bottom:4px;">ÉTAPE 0 — GUARDRAIL BRUT</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);">Injection · XSS · Hate speech détectés avant tout traitement</div>
+        </div>
+
+        <div class="reveal" style="padding:12px 16px;background:rgba(194,65,12,.05);border:1px solid rgba(194,65,12,.18);border-left:3px solid var(--amber);border-radius:8px;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.1em;font-weight:700;margin-bottom:4px;">ÉTAPE 1 — CORRECTION + POLITESSE</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);">Normalisation orthographique · détection de politesse → court-circuit amical</div>
+        </div>
+
+        <div class="reveal" style="padding:12px 16px;background:rgba(14,116,144,.05);border:1px solid rgba(14,116,144,.18);border-left:3px solid var(--cyan);border-radius:8px;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.1em;font-weight:700;margin-bottom:4px;">ÉTAPE 2 — CONTEXTE REDIS</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);">6 derniers échanges chargés · détection de question de suivi</div>
+        </div>
+
+        <div class="reveal" style="padding:12px 16px;background:rgba(109,40,217,.05);border:1px solid rgba(109,40,217,.18);border-left:3px solid var(--purple);border-radius:8px;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--purple);letter-spacing:.1em;font-weight:700;margin-bottom:4px;">ÉTAPE 3 — RÉCUPÉRATION RAG</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);">ChromaDB → chunks pertinents injectés dans le prompt LLM</div>
+        </div>
+
+        <div class="reveal" style="padding:12px 16px;background:rgba(21,128,61,.05);border:1px solid rgba(21,128,61,.18);border-left:3px solid var(--green);border-radius:8px;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:.1em;font-weight:700;margin-bottom:4px;">ÉTAPE 4 — LLM + POST-TRAITEMENT</div>
+          <div style="font-family:var(--font);font-size:18px;color:var(--t2);">Inférence · bleach.clean() · timeout 10s · retry ×2</div>
+        </div>
+
+        <div class="reveal" style="padding:12px 16px;background:rgba(15,23,42,.04);border:1px solid var(--card-bdr);border-radius:8px;flex:1;">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--t3);letter-spacing:.1em;font-weight:700;margin-bottom:6px;">4 INSTANCES LLM SPÉCIALISÉES</div>
+          <div class="code" style="font-size:15px;line-height:1.8;padding:12px 16px;"><span class="c">main     </span> 0.0 · 800 tok  <span class="d">réponse finale</span>
+<span class="a">rewriter </span> 0.0 ·  60 tok  <span class="d">mots-clés RAG</span>
+<span class="g">polite   </span> 0.0 · 150 tok  <span class="d">correction + ton</span>
+<span class="r">guardrail</span> 0.0 · 200 tok  <span class="d">sécurité LLM01</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">11 / 30</div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════
+     SLIDE 13 — MODULE 2 SECTION DIVIDER
+     ════════════════════════════════════════════════════════ -->
+<section class="slide" id="s-m2-div">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 50%,rgba(194,65,12,.18) 0%,transparent 58%),radial-gradient(ellipse at 90% 10%,rgba(109,40,217,.08) 0%,transparent 44%),radial-gradient(ellipse at 10% 90%,rgba(14,116,144,.06) 0%,transparent 44%);"></div>
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px;">
+    <div class="reveal" style="font-family:var(--mono);font-size:16px;letter-spacing:.24em;color:var(--t3);text-transform:uppercase;">Section 05</div>
+    <div class="reveal" style="font-family:var(--mono);font-size:18px;letter-spacing:.2em;color:var(--amber);font-weight:700;text-transform:uppercase;">Module 02</div>
+    <h2 class="reveal" style="font-family:var(--font);font-size:100px;font-weight:800;color:var(--t1);letter-spacing:-.04em;line-height:1;">Assistant Technique</h2>
+    <div class="reveal" style="width:72px;height:3px;background:var(--amber);border-radius:2px;"></div>
+    <p class="reveal" style="font-family:var(--font);font-size:28px;font-weight:300;color:var(--t2);max-width:860px;line-height:1.4;">Support RAG scopé pour le personnel des établissements Netethic</p>
+    <div class="reveal" style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;justify-content:center;">
+      <span class="badge amber">Pipeline commun</span>
+      <span class="badge amber">Scénario PDF</span>
+      <span class="badge amber">Scénario LIVE</span>
+      <span class="badge amber">35/35 tests ✓</span>
+    </div>
+  </div>
+  <div class="pg">12 / 30</div>
+</section>
+
+
+</main>
+</div>
+
+<div class="pg-ui"><div class="pg-fill" id="pgFill"></div></div>
+<div class="pg-count" id="pgCount">06 / 30</div>
+
+<script>
+const SECTION_CONFIG = {
+  globalStart: 6,
+  globalTotal: 30,
+  next: 'modules_salah.html',
+  prev: 'index.html'
+};
+
+class SlidePresentation {
+  constructor() {
+    this.slides  = document.querySelectorAll('.slide');
+    this.total   = this.slides.length;
+    this.current = 0;
+    this.stage   = document.getElementById('deckStage');
+    this.pgFill  = document.getElementById('pgFill');
+    this.pgCount = document.getElementById('pgCount');
+    this.touchX  = 0;
+    this.setupScale(); this.setupKeyboard(); this.setupTouch(); this.setupWheel();
+    this.showSlide(window.location.hash === '#last' ? this.total - 1 : 0);
+  }
+  setupScale() {
+    const s = () => {
+      const f = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+      const x = (window.innerWidth - 1920*f)/2, y = (window.innerHeight - 1080*f)/2;
+      this.stage.style.transform = `translate(${x}px,${y}px) scale(${f})`;
+    }; s(); window.addEventListener('resize', s);
+  }
+  setupKeyboard() {
+    document.addEventListener('keydown', e => {
+      if (e.target.getAttribute('contenteditable')) return;
+      if (['ArrowRight','ArrowDown','Space','PageDown'].includes(e.code)) { e.preventDefault(); this.next(); }
+      else if (['ArrowLeft','ArrowUp','PageUp'].includes(e.code))         { e.preventDefault(); this.prev(); }
+      else if (e.code==='Home') { e.preventDefault(); this.showSlide(0); }
+      else if (e.code==='End')  { e.preventDefault(); this.showSlide(this.total-1); }
+    });
+  }
+  setupTouch() {
+    this.stage.addEventListener('touchstart', e => { this.touchX = e.changedTouches[0].screenX; }, {passive:true});
+    this.stage.addEventListener('touchend',   e => {
+      const dx = e.changedTouches[0].screenX - this.touchX;
+      if (Math.abs(dx) > 40) dx < 0 ? this.next() : this.prev();
+    }, {passive:true});
+  }
+  setupWheel() {
+    let last = 0;
+    document.addEventListener('wheel', e => {
+      const now = Date.now(); if (now-last<500) return; last=now;
+      e.deltaY>0 ? this.next() : this.prev();
+    }, {passive:true});
+  }
+  next() { this.current===this.total-1 && SECTION_CONFIG.next ? (window.location.href=SECTION_CONFIG.next) : this.showSlide(this.current+1); }
+  prev() { this.current===0 && SECTION_CONFIG.prev ? (window.location.href=SECTION_CONFIG.prev+'#last') : this.showSlide(this.current-1); }
+  showSlide(idx) {
+    const i = Math.max(0,Math.min(idx,this.total-1));
+    this.slides.forEach((s,n) => { s.classList.toggle('active',n===i); s.classList.toggle('visible',n===i); });
+    this.current = i;
+    const g = SECTION_CONFIG.globalStart + i;
+    const pct = (g/SECTION_CONFIG.globalTotal*100).toFixed(1);
+    this.pgFill.style.width = pct+'%';
+    this.pgCount.textContent = `${String(g).padStart(2,'0')} / ${SECTION_CONFIG.globalTotal}`;
+  }
+}
+const deck = new SlidePresentation();
+</script>
+</body>
+</html>

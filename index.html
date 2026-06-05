@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetEthic AI — Soutenance PFE 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f4f8; --slide-bg:#ffffff; --grid-c:rgba(14,116,144,0.04);
+  --card-bg:rgba(15,23,42,0.035); --card-bdr:rgba(15,23,42,0.09);
+  --t1:#0f172a; --t2:#334155; --t3:#94a3b8;
+  --cyan:#0e7490; --cyan-l:rgba(14,116,144,0.12);
+  --amber:#c2410c; --amber-l:rgba(194,65,12,0.12);
+  --green:#15803d; --green-l:rgba(21,128,61,0.12);
+  --red:#dc2626; --red-l:rgba(220,38,38,0.10);
+  --purple:#6d28d9; --purple-l:rgba(109,40,217,0.10);
+  --font:'Urbanist',sans-serif; --mono:'JetBrains Mono',monospace;
+  --spring:cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--bg);}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--slide-bg);}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1;}
+img,video,canvas,svg{max-width:100%;max-height:100%;}
+@media print{html,body{width:1920px;height:auto;overflow:visible;background:#fff;}.deck-viewport{position:static;overflow:visible;}.deck-stage{position:static;width:auto;height:auto;transform:none!important;}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always;}.slide:last-child{break-after:auto;page-break-after:auto;}.pg-ui{display:none!important;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.1ms!important;}}
+.slide{background:linear-gradient(var(--grid-c) 1px,transparent 1px),linear-gradient(90deg,var(--grid-c) 1px,transparent 1px),var(--slide-bg);background-size:80px 80px,80px 80px;}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--spring),transform .5s var(--spring);}
+.slide.visible .reveal{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.05s;}.reveal:nth-child(2){transition-delay:.13s;}.reveal:nth-child(3){transition-delay:.21s;}
+.reveal:nth-child(4){transition-delay:.29s;}.reveal:nth-child(5){transition-delay:.37s;}.reveal:nth-child(6){transition-delay:.45s;}
+.reveal:nth-child(7){transition-delay:.53s;}.reveal:nth-child(8){transition-delay:.61s;}.reveal:nth-child(9){transition-delay:.69s;}
+.sh{position:absolute;top:68px;left:88px;right:88px;}
+.sb{position:absolute;top:280px;left:88px;right:88px;bottom:64px;}
+.s-bg{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.sec-label{font-family:var(--mono);font-size:21px;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);margin-bottom:16px;}
+.sec-label.cyan{color:var(--cyan);}.sec-label.amber{color:var(--amber);}.sec-label.green{color:var(--green);}
+.sec-label.red{color:var(--red);}.sec-label.purple{color:var(--purple);}
+.stitle{font-family:var(--font);font-size:76px;font-weight:800;color:var(--t1);line-height:1.06;letter-spacing:-.035em;margin-bottom:22px;}
+.abar{width:0;height:4px;border-radius:2px;background:var(--cyan);margin-bottom:38px;transition:width .75s var(--spring) .38s;}
+.abar.amber{background:var(--amber);}.abar.purple{background:var(--purple);}
+.abar.green{background:var(--green);}.abar.red{background:var(--red);}
+.slide.visible .abar{width:64px;}
+.card{background:var(--card-bg);border:1px solid var(--card-bdr);border-radius:14px;padding:32px 38px;}
+.card.cyan{border-left:4px solid var(--cyan);background:var(--cyan-l);}
+.card.amber{border-left:4px solid var(--amber);background:var(--amber-l);}
+.card.green{border-left:4px solid var(--green);background:var(--green-l);}
+.card.red{border-left:4px solid var(--red);background:var(--red-l);}
+.card.purple{border-left:4px solid var(--purple);background:var(--purple-l);}
+.ctitle{font-family:var(--font);font-size:30px;font-weight:700;color:var(--t1);margin-bottom:16px;}
+.blist{list-style:none;display:flex;flex-direction:column;gap:14px;}
+.blist li{display:flex;align-items:flex-start;gap:14px;font-family:var(--font);font-size:28px;color:var(--t2);line-height:1.55;}
+.blist li::before{content:'▸';color:var(--cyan);font-size:18px;margin-top:6px;flex-shrink:0;}
+.blist.amber li::before{color:var(--amber);}.blist.green li::before{color:var(--green);}
+.blist.purple li::before{color:var(--purple);}.blist.red li::before{color:var(--red);}
+.blist.sm li{font-size:25px;gap:12px;}.blist.sm li::before{font-size:15px;margin-top:5px;}
+.badge{display:inline-block;padding:5px 15px;border-radius:100px;font-family:var(--mono);font-size:15px;font-weight:700;white-space:nowrap;}
+.badge.cyan{background:var(--cyan-l);color:var(--cyan);}.badge.amber{background:var(--amber-l);color:var(--amber);}
+.badge.green{background:var(--green-l);color:var(--green);}.badge.red{background:var(--red-l);color:var(--red);}
+.badge.purple{background:var(--purple-l);color:var(--purple);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:34px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;}
+.pg{position:absolute;bottom:28px;right:88px;font-family:var(--mono);font-size:16px;color:var(--t3);letter-spacing:.08em;}
+.pg-ui{position:fixed;bottom:0;left:0;right:0;height:3px;z-index:2000;background:rgba(15,23,42,.07);}
+.pg-fill{height:100%;background:var(--cyan);transition:width .35s var(--spring);}
+.pg-count{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:13px;color:rgba(15,23,42,.28);letter-spacing:.12em;z-index:2000;}
+
+/* SLIDE 01 — COVER */
+.slide-cover{background:radial-gradient(ellipse at 18% 50%,rgba(14,116,144,.11) 0%,transparent 42%),radial-gradient(ellipse at 82% 18%,rgba(194,65,12,.08) 0%,transparent 36%),radial-gradient(ellipse at 68% 90%,rgba(109,40,217,.06) 0%,transparent 32%),linear-gradient(var(--grid-c) 1px,transparent 1px),linear-gradient(90deg,var(--grid-c) 1px,transparent 1px),var(--slide-bg)!important;background-size:auto,auto,auto,80px 80px,80px 80px!important;}
+.deco{position:absolute;border-radius:50%;pointer-events:none;z-index:0;}
+@keyframes dfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes dfloat2{0%,100%{transform:translateY(0)}50%{transform:translateY(14px)}}
+.d1{width:380px;height:380px;top:-90px;right:-60px;background:radial-gradient(circle,rgba(14,116,144,.09) 0%,transparent 65%);animation:dfloat 11s ease-in-out infinite;}
+.d2{width:260px;height:260px;bottom:-30px;right:80px;background:radial-gradient(circle,rgba(194,65,12,.08) 0%,transparent 65%);animation:dfloat2 14s ease-in-out infinite 2s;}
+.d3{width:200px;height:200px;top:260px;right:540px;background:radial-gradient(circle,rgba(109,40,217,.06) 0%,transparent 65%);animation:dfloat 18s ease-in-out infinite 5s;}
+#deck-canvas{position:absolute;top:0;left:0;width:1920px;height:1080px;pointer-events:none;z-index:0;}
+.cover-hero{position:absolute;top:0;left:0;right:560px;bottom:0;display:flex;flex-direction:column;justify-content:center;padding:0 100px;z-index:1;}
+.cover-tag{font-family:var(--mono);font-size:21px;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase;border-left:3px solid var(--cyan);padding-left:16px;margin-bottom:30px;}
+.cover-title{font-family:var(--font);font-weight:800;font-size:78px;line-height:1.04;letter-spacing:-.038em;color:var(--t1);margin-bottom:24px;max-width:980px;}
+.cover-sub{font-family:var(--font);font-size:32px;font-weight:300;color:var(--t2);margin-bottom:52px;max-width:780px;line-height:1.4;}
+.cover-meta{display:flex;gap:32px;align-items:center;flex-wrap:wrap;}
+.cover-mi{display:flex;flex-direction:column;gap:5px;}
+.cover-ml{font-family:var(--mono);font-size:15px;color:var(--t3);letter-spacing:.15em;text-transform:uppercase;}
+.cover-mv{font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);}
+.cover-sep{width:1px;height:40px;background:var(--card-bdr);flex-shrink:0;}
+.cover-panel{position:absolute;right:52px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:16px;width:478px;z-index:1;}
+.jury-block{padding:30px 32px;border-radius:13px;background:rgba(15,23,42,.03);border:1px solid rgba(15,23,42,.08);}
+.jury-label{font-family:var(--mono);font-size:14px;color:var(--t3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:18px;font-weight:700;}
+.jury-row{display:flex;gap:12px;align-items:baseline;margin-bottom:11px;}
+.jury-role{font-family:var(--mono);font-size:12px;letter-spacing:.1em;min-width:138px;padding:3px 9px;border-radius:4px;flex-shrink:0;font-weight:700;}
+.jury-role.cyan{background:rgba(14,116,144,.1);color:var(--cyan);}
+.jury-role.muted{background:rgba(15,23,42,.06);color:var(--t3);}
+.jury-name{font-family:var(--font);font-size:21px;color:var(--t2);line-height:1.3;}
+.cand-block{padding:24px 28px;border-radius:11px;background:rgba(14,116,144,.06);border:1px solid rgba(14,116,144,.22);}
+.cand-label{font-family:var(--mono);font-size:14px;color:var(--cyan);letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px;font-weight:700;}
+.cand-names{font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);line-height:1.4;}
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+<canvas id="deck-canvas"></canvas>
+
+<!-- ════════════════════════ SLIDE 01 — COVER ════════════════════════ -->
+<section class="slide slide-cover active" id="s-cover">
+  <div class="deco d1"></div><div class="deco d2"></div><div class="deco d3"></div>
+  <div style="position:absolute;top:20px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:0 60px;z-index:10;">
+    <div style="display:flex;align-items:center;gap:22px;">
+      <img src="../presentation/assets/logo_istic.jpg" alt="ISTIC" style="height:88px;width:auto;object-fit:contain;">
+      <div style="width:1px;height:54px;background:var(--card-bdr);"></div>
+      <img src="../presentation/assets/logo_ucar.jpg" alt="Université de Carthage" style="height:88px;width:auto;object-fit:contain;">
+    </div>
+    <img src="../presentation/assets/logo-smart.png" alt="Smart-Conseil" style="height:88px;width:auto;object-fit:contain;">
+  </div>
+  <div class="cover-hero">
+    <div class="cover-tag reveal">ISTIC · Université de Carthage · Licence en Sciences de l'Informatique</div>
+    <h1 class="cover-title reveal">Intégration d'Agents Intelligents dans une Plateforme de Détection du Cyberharcèlement</h1>
+    <p class="cover-sub reveal">Réalisé au sein de Smart-Conseil — Année universitaire 2025–2026</p>
+    <div class="cover-meta reveal">
+      <div class="cover-mi"><span class="cover-ml">Candidats</span><span class="cover-mv">Khemiri &amp; Mani</span></div>
+      <div class="cover-sep"></div>
+      <div class="cover-mi"><span class="cover-ml">Enc. professionnel</span><span class="cover-mv">Mme. Serawork Wallelign</span></div>
+      <div class="cover-sep"></div>
+      <div class="cover-mi"><span class="cover-ml">Date</span><span class="cover-mv">06 Juin 2026</span></div>
+    </div>
+  </div>
+  <div class="cover-panel">
+    <div class="cand-block reveal">
+      <div class="cand-label">Réalisé par</div>
+      <div class="cand-names">Mohamed Khalil Khemiri<br>Mohamed Salah Mani</div>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:16px;color:var(--t2);line-height:1.6;">Python · FastAPI · RAG · Mistral-7B<br>OWASP · RAGAS · Docker Compose</div>
+    </div>
+    <div class="jury-block reveal">
+      <div class="jury-label">Jury</div>
+      <div class="jury-row"><span class="jury-role cyan">Présidente</span><span class="jury-name">Mme. Mohja Ben AMARA, SOFRECOM</span></div>
+      <div class="jury-row"><span class="jury-role muted">Rapporteur</span><span class="jury-name">Mme. Nour BRINIS, ISTIC</span></div>
+      <div class="jury-row"><span class="jury-role muted">Examinateur</span><span class="jury-name">M. Moez ATTIA, ISTIC</span></div>
+      <div class="jury-row" style="margin-bottom:0;"><span class="jury-role muted">Enc. académique</span><span class="jury-name">M. Wassim ABBESSI, ISTIC</span></div>
+    </div>
+  </div>
+  <div class="pg">01 / 30</div>
+</section>
+
+
+<!-- ════════════════════════ SLIDE 02 — PLAN ════════════════════════ -->
+<section class="slide" id="s-plan">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 2% 98%,rgba(14,116,144,.12) 0%,transparent 50%),radial-gradient(ellipse at 98% 2%,rgba(194,65,12,.10) 0%,transparent 48%),radial-gradient(ellipse at 98% 98%,rgba(109,40,217,.07) 0%,transparent 40%),radial-gradient(ellipse at 2% 2%,rgba(21,128,61,.06) 0%,transparent 40%);"></div>
+  <div class="sh">
+    <div class="sec-label reveal">Sommaire</div>
+    <h2 class="stitle reveal">Plan de la présentation</h2>
+    <div class="abar reveal" style="margin-bottom:14px;"></div>
+  </div>
+  <div class="sb" style="top:262px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;height:100%;">
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--t3);min-width:50px;line-height:1;flex-shrink:0;">01</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Contexte &amp; Entreprise</div><div style="font-family:var(--mono);font-size:14px;color:var(--t3);margin-top:4px;">Smart-Conseil · Netethic · Cadre juridique</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(220,38,38,.04);border:1px solid rgba(220,38,38,.18);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--red);min-width:50px;line-height:1;flex-shrink:0;">02</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Problématique &amp; Solution</div><div style="font-family:var(--mono);font-size:14px;color:var(--red);margin-top:4px;">Critique de l'existant · 4 modules proposés</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--t3);min-width:50px;line-height:1;flex-shrink:0;">03</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Choix Technologiques</div><div style="font-family:var(--mono);font-size:14px;color:var(--t3);margin-top:4px;">FastAPI · Redis · Docker · vLLM · ChromaDB</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(14,116,144,.05);border:1px solid rgba(14,116,144,.20);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--cyan);min-width:50px;line-height:1;flex-shrink:0;">04</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Architecture &amp; Pipeline</div><div style="font-family:var(--mono);font-size:14px;color:var(--cyan);margin-top:4px;">Vue d'ensemble · Pipeline commun partagé</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(194,65,12,.05);border:1px solid rgba(194,65,12,.20);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--amber);min-width:50px;line-height:1;flex-shrink:0;">05</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Module 2 — Assistant Technique</div><div style="font-family:var(--mono);font-size:14px;color:var(--amber);margin-top:4px;">Pipeline RAG scopé · Scénarios · Démonstration</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(109,40,217,.05);border:1px solid rgba(109,40,217,.20);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--purple);min-width:50px;line-height:1;flex-shrink:0;">06</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Module 3 — Assistant Émotionnel</div><div style="font-family:var(--mono);font-size:14px;color:var(--purple);margin-top:4px;">10 étapes · Crise · LLM-as-a-Judge</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(14,116,144,.05);border:1px solid rgba(14,116,144,.20);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--cyan);min-width:50px;line-height:1;flex-shrink:0;">07</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Module 1 — Noa Assistant</div><div style="font-family:var(--mono);font-size:14px;color:var(--cyan);margin-top:4px;">Boucle agentique · RAG public · Multi-LLM</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(21,128,61,.05);border:1px solid rgba(21,128,61,.20);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--green);min-width:50px;line-height:1;flex-shrink:0;">08</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Module 4 — Classificateur</div><div style="font-family:var(--mono);font-size:14px;color:var(--green);margin-top:4px;">16 labels · 4 stratégies · Code Pénal français</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(220,38,38,.04);border:1px solid rgba(220,38,38,.15);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--red);min-width:50px;line-height:1;flex-shrink:0;">09</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Évaluation &amp; Sécurité</div><div style="font-family:var(--mono);font-size:14px;color:var(--t3);margin-top:4px;">RAGAS · LLM-as-a-Judge · OWASP Top 10</div></div>
+        </div>
+        <div class="reveal" style="display:flex;align-items:center;gap:20px;padding:20px 26px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:11px;">
+          <div style="font-family:var(--mono);font-size:40px;font-weight:700;color:var(--t3);min-width:50px;line-height:1;flex-shrink:0;">10</div>
+          <div><div style="font-family:var(--font);font-size:26px;font-weight:700;color:var(--t1);">Conclusion &amp; Perspectives</div><div style="font-family:var(--mono);font-size:14px;color:var(--t3);margin-top:4px;">Impact · Apache Spark · Détection multimodale</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">02 / 30</div>
+</section>
+
+
+<!-- ════════════════════════ SLIDE 03 — CONTEXT ════════════════════════ -->
+<section class="slide" id="s-context">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 100% 55%,rgba(14,116,144,.14) 0%,transparent 50%),radial-gradient(ellipse at 0% 0%,rgba(194,65,12,.08) 0%,transparent 42%);"></div>
+  <div class="sh">
+    <div class="sec-label cyan reveal">Contexte</div>
+    <h2 class="stitle reveal">Smart-Conseil &amp; la plateforme Netethic</h2>
+    <div class="abar reveal" style="margin-bottom:12px;"></div>
+  </div>
+  <div class="sb" style="top:266px;">
+    <div class="two-col" style="height:100%;">
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="reveal" style="padding:32px 36px;background:rgba(14,116,144,.06);border:1px solid rgba(14,116,144,.22);border-radius:13px;flex:1;">
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:22px;">
+            <img src="../presentation/assets/logo-smart.png" alt="Smart-Conseil" style="height:54px;object-fit:contain;">
+            <div>
+              <div style="font-family:var(--mono);font-size:14px;color:var(--cyan);letter-spacing:.15em;text-transform:uppercase;">Entreprise d'accueil</div>
+              <div style="font-family:var(--font);font-size:36px;font-weight:800;color:var(--t1);">Smart-Conseil</div>
+            </div>
+          </div>
+          <ul class="blist sm" style="gap:15px;">
+            <li>Conseil informatique spécialisé IA &amp; Data Science — Ariana, Technopole El Ghazela, Tunisie</li>
+            <li>Titulaire d'un <strong style="color:var(--t1);">brevet européen</strong> pour une de ses innovations</li>
+            <li>Développe <strong style="color:var(--t1);">Netethic</strong> — plateforme SaaS de détection du cyberharcèlement scolaire</li>
+            <li>Méthode <strong style="color:var(--t1);">Scrum</strong> — sprints hebdomadaires, daily stand-ups</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="reveal" style="padding:32px 36px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.22);border-radius:13px;flex:1;">
+          <div style="font-family:var(--mono);font-size:14px;color:var(--amber);letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;">Plateforme cible</div>
+          <div style="font-family:var(--font);font-size:40px;font-weight:800;color:var(--t1);margin-bottom:20px;">Netethic</div>
+          <ul class="blist sm amber" style="gap:15px;">
+            <li>Tableau de bord interactif — visualisation des cas préoccupants</li>
+            <li>Système de gestion et suivi des signalements</li>
+            <li>Interface d'administration pour les équipes pédagogiques</li>
+            <li>Déployée dans les établissements scolaires en France</li>
+          </ul>
+        </div>
+        <div class="reveal" style="padding:22px 28px;background:rgba(15,23,42,.03);border:1px solid var(--card-bdr);border-radius:11px;display:flex;align-items:center;gap:28px;">
+          <div style="font-family:var(--font);font-size:70px;font-weight:800;color:var(--cyan);letter-spacing:-.03em;line-height:1;flex-shrink:0;">800K</div>
+          <div style="font-family:var(--font);font-size:26px;color:var(--t2);line-height:1.45;">élèves victimes de harcèlement scolaire chaque année en France <span style="font-family:var(--mono);font-size:16px;color:var(--t3);">(DGESCO 2023)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pg">03 / 30</div>
+</section>
+
+
+<!-- ════════════════════════ SLIDE 04 — CADRE JURIDIQUE ════════════════════════ -->
+<section class="slide" id="s-legal">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 0%,rgba(220,38,38,.12) 0%,transparent 48%),radial-gradient(ellipse at 10% 90%,rgba(14,116,144,.09) 0%,transparent 44%),radial-gradient(ellipse at 90% 90%,rgba(194,65,12,.07) 0%,transparent 40%);"></div>
+  <div class="sh">
+    <div class="sec-label red reveal">Cadre Juridique</div>
+    <h2 class="stitle reveal">Le cadre légal qui structure notre projet</h2>
+    <p class="reveal" style="font-family:var(--font);font-size:23px;color:var(--t2);font-style:italic;margin:-10px 0 6px;">Trois niveaux d'obligations légales — personnel, plateforme et données</p>
+    <div class="abar red reveal" style="margin-bottom:12px;"></div>
+  </div>
+  <div class="sb" style="top:270px;">
+    <div class="three-col" style="height:100%;">
+
+      <div style="display:flex;flex-direction:column;gap:16px;" class="reveal">
+        <div style="padding:28px 30px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.22);border-radius:13px;flex:1;">
+          <div style="font-family:var(--mono);font-size:14px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px;font-weight:700;">Code Pénal Français</div>
+          <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--t1);margin-bottom:14px;">Harcèlement en ligne</div>
+          <ul class="blist sm red" style="gap:13px;">
+            <li><strong style="color:var(--t1);">Art. 222-33-2-2</strong> — Cyberharcèlement moral, peines alourdies pour actes répétés</li>
+            <li><strong style="color:var(--t1);">Art. 222-33-2-3</strong> — Harcèlement de meute en ligne</li>
+            <li>Aggravation si victime mineure ou vulnérable</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;" class="reveal">
+        <div style="padding:28px 30px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.22);border-radius:13px;flex:1;">
+          <div style="font-family:var(--mono);font-size:14px;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px;font-weight:700;">Loi n° 2022-299</div>
+          <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--t1);margin-bottom:14px;">Lutte contre le harcèlement scolaire</div>
+          <ul class="blist sm amber" style="gap:13px;">
+            <li>Obligation des établissements de détecter et signaler</li>
+            <li>Mesures de protection des victimes mineures</li>
+            <li>Textes intégrés dans la base juridique du <strong style="color:var(--t1);">Module 4</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;" class="reveal">
+        <div style="padding:28px 30px;background:rgba(14,116,144,.06);border:1px solid rgba(14,116,144,.22);border-radius:13px;flex:1;">
+          <div style="font-family:var(--mono);font-size:14px;color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px;font-weight:700;">RGPD &amp; Protection des données</div>
+          <div style="font-family:var(--font);font-size:24px;font-weight:700;color:var(--t1);margin-bottom:14px;">Données personnelles des mineurs</div>
+          <ul class="blist sm" style="gap:13px;">
+            <li>PII (nom, email) <strong style="color:var(--t1);">jamais transmises</strong> au client — Redis uniquement</li>
+            <li>TTL automatique — aucune conservation après session</li>
+            <li>Conformité RGPD par design</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="reveal" style="margin-top:20px;padding:20px 26px;background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.18);border-radius:11px;display:flex;align-items:center;gap:22px;">
+      <div style="width:4px;height:44px;background:var(--red);border-radius:2px;flex-shrink:0;"></div>
+      <div style="font-family:var(--font);font-size:26px;color:var(--t1);line-height:1.45;">Ce cadre légal impose une réponse <strong>automatisée, disponible 24h/24, précise, et ancrée dans le droit</strong>. C'est la raison d'être de notre solution. <span style="color:var(--red);font-weight:700;">→</span></div>
+    </div>
+  </div>
+  <div class="pg">04 / 30</div>
+</section>
+
+
+<!-- ════════════════════════ SLIDE 05 — PROBLÉMATIQUE ════════════════════════ -->
+<section class="slide" id="s-probleme">
+  <div class="s-bg" style="background:radial-gradient(ellipse at 50% 40%,rgba(220,38,38,.10) 0%,transparent 55%),radial-gradient(ellipse at 90% 80%,rgba(194,65,12,.09) 0%,transparent 42%),radial-gradient(ellipse at 10% 20%,rgba(14,116,144,.08) 0%,transparent 42%);"></div>
+  <div class="sh">
+    <div class="sec-label red reveal">Problématique</div>
+    <h2 class="stitle reveal">Un problème massif, sans réponse automatisée</h2>
+    <div class="abar red reveal" style="margin-bottom:12px;"></div>
+  </div>
+  <div class="sb" style="top:258px;">
+    <div class="three-col" style="margin-bottom:22px;">
+      <div class="reveal" style="padding:30px 32px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.25);border-radius:13px;text-align:center;">
+        <div style="font-family:var(--font);font-size:84px;font-weight:800;color:var(--red);line-height:1;letter-spacing:-.04em;margin-bottom:10px;">~800K</div>
+        <div style="font-family:var(--font);font-size:24px;color:var(--t2);line-height:1.45;">élèves victimes de harcèlement scolaire par an en France</div>
+        <div style="font-family:var(--mono);font-size:14px;color:var(--t3);margin-top:10px;">Source : DGESCO 2023</div>
+      </div>
+      <div class="reveal" style="padding:30px 32px;background:rgba(194,65,12,.07);border:1px solid rgba(194,65,12,.25);border-radius:13px;text-align:center;">
+        <div style="font-family:var(--font);font-size:84px;font-weight:800;color:var(--amber);line-height:1;letter-spacing:-.04em;margin-bottom:10px;">84.7%</div>
+        <div style="font-family:var(--font);font-size:24px;color:var(--t2);line-height:1.45;">des 15–24 ans passent en moyenne <strong style="color:var(--t1);">3h50</strong> par jour en ligne</div>
+        <div style="font-family:var(--mono);font-size:14px;color:var(--t3);margin-top:10px;">Source : Digital Report 2024</div>
+      </div>
+      <div class="reveal" style="padding:30px 32px;background:rgba(15,23,42,.04);border:1px solid var(--card-bdr);border-radius:13px;text-align:center;">
+        <div style="font-family:var(--font);font-size:84px;font-weight:800;color:var(--t3);line-height:1;letter-spacing:-.04em;margin-bottom:10px;">24/7</div>
+        <div style="font-family:var(--font);font-size:24px;color:var(--t2);line-height:1.45;"><strong style="color:var(--red);">Aucune aide</strong> disponible hors heures ouvrées pour les victimes</div>
+        <div style="font-family:var(--mono);font-size:14px;color:var(--red);margin-top:10px;">Le harcèlement n'a pas d'horaires</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="reveal" style="padding:24px 28px;background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.15);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:.15em;text-transform:uppercase;margin-bottom:14px;font-weight:700;">Ce qui manque sur Netethic</div>
+        <ul class="blist sm red" style="gap:12px;">
+          <li>Aucun assistant virtuel pour informer les visiteurs du site</li>
+          <li>Pas de support automatisé pour le personnel des établissements</li>
+          <li>Aucun outil de soutien pour les élèves en difficulté</li>
+          <li>Pas d'analyse automatique des textes soumis</li>
+        </ul>
+      </div>
+      <div class="reveal" style="padding:24px 28px;background:rgba(14,116,144,.05);border:1px solid rgba(14,116,144,.18);border-radius:11px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.15em;text-transform:uppercase;margin-bottom:14px;font-weight:700;">Les barrières structurelles</div>
+        <ul class="blist sm" style="gap:12px;">
+          <li>La victime hésite à s'adresser à un adulte par crainte des représailles</li>
+          <li>Délai important entre signalement et prise en charge effective</li>
+          <li>Services d'écoute accessibles seulement aux heures ouvrées</li>
+          <li>Détection réactive, jamais préventive</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="pg">05 / 30</div>
+</section>
+
+
+</main>
+</div>
+<div class="pg-ui"><div class="pg-fill" id="pgFill"></div></div>
+<div class="pg-count" id="pgCount">01 / 30</div>
+<script>
+const SECTION_CONFIG = { globalStart: 1, globalTotal: 30, next: 'solution.html', prev: null };
+class SlidePresentation {
+  constructor() {
+    this.slides=document.querySelectorAll('.slide');this.total=this.slides.length;this.current=0;
+    this.stage=document.getElementById('deckStage');this.pgFill=document.getElementById('pgFill');
+    this.pgCount=document.getElementById('pgCount');this.touchX=0;
+    this.setupScale();this.setupKeyboard();this.setupTouch();this.setupWheel();
+    this.showSlide(window.location.hash==='#last'?this.total-1:0);
+  }
+  setupScale(){const s=()=>{const f=Math.min(window.innerWidth/1920,window.innerHeight/1080);const x=(window.innerWidth-1920*f)/2,y=(window.innerHeight-1080*f)/2;this.stage.style.transform=`translate(${x}px,${y}px) scale(${f})`;};s();window.addEventListener('resize',s);}
+  setupKeyboard(){document.addEventListener('keydown',e=>{if(e.target.getAttribute('contenteditable'))return;if(['ArrowRight','ArrowDown','Space','PageDown'].includes(e.code)){e.preventDefault();this.next();}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.code)){e.preventDefault();this.prev();}else if(e.code==='Home'){e.preventDefault();this.showSlide(0);}else if(e.code==='End'){e.preventDefault();this.showSlide(this.total-1);}});}
+  setupTouch(){this.stage.addEventListener('touchstart',e=>{this.touchX=e.changedTouches[0].screenX;},{passive:true});this.stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-this.touchX;if(Math.abs(dx)>40)dx<0?this.next():this.prev();},{passive:true});}
+  setupWheel(){let last=0;document.addEventListener('wheel',e=>{const now=Date.now();if(now-last<500)return;last=now;e.deltaY>0?this.next():this.prev();},{passive:true});}
+  next(){this.current===this.total-1&&SECTION_CONFIG.next?(window.location.href=SECTION_CONFIG.next):this.showSlide(this.current+1);}
+  prev(){this.current===0&&SECTION_CONFIG.prev?(window.location.href=SECTION_CONFIG.prev+'#last'):this.showSlide(this.current-1);}
+  showSlide(idx){const i=Math.max(0,Math.min(idx,this.total-1));this.slides.forEach((s,n)=>{s.classList.toggle('active',n===i);s.classList.toggle('visible',n===i);});this.current=i;const g=SECTION_CONFIG.globalStart+i;const pct=(g/SECTION_CONFIG.globalTotal*100).toFixed(1);this.pgFill.style.width=pct+'%';this.pgCount.textContent=`${String(g).padStart(2,'0')} / ${SECTION_CONFIG.globalTotal}`;}
+}
+(function initParticles(){const canvas=document.getElementById('deck-canvas');if(!canvas)return;const ctx=canvas.getContext('2d');const W=1920,H=1080;canvas.width=W;canvas.height=H;const COLS=[[14,116,144],[194,65,12],[109,40,217],[21,128,61]];const pts=Array.from({length:48},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*2.2+.8,col:COLS[Math.floor(Math.random()*COLS.length)]}));function draw(){ctx.clearRect(0,0,W,H);for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<200){ctx.beginPath();ctx.strokeStyle=`rgba(14,116,144,${.04*(1-d/200)})`;ctx.lineWidth=1;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}}for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${p.col[0]},${p.col[1]},${p.col[2]},0.38)`;ctx.fill();}requestAnimationFrame(draw);}draw();})();
+const deck = new SlidePresentation();
+</script>
+</body>
+</html>
